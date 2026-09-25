@@ -1,0 +1,20 @@
+{
+  "appId": "com.cristianbuitrago.lifequest",
+  "appName": "LifeQuest",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#0c0b16"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 600,
+      "launchAutoHide": true,
+      "backgroundColor": "#0c0b16",
+      "showSpinner": false
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_lifequest",
+      "iconColor": "#6d4aff"
+    }
+  }
+}
