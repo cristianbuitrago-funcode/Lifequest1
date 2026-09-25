@@ -1,0 +1,16 @@
+/*
+ * Fuentes incluidas en la app (subconjunto latino) para que funcione sin
+ * conexión. Las tres son fuentes variables con licencia SIL Open Font License 1.1.
+ */
+@font-face{
+  font-family:'Cinzel'; font-style:normal; font-weight:600 700; font-display:swap;
+  src:url(../fonts/cinzel-latin.woff2) format('woff2');
+}
+@font-face{
+  font-family:'Manrope'; font-style:normal; font-weight:400 800; font-display:swap;
+  src:url(../fonts/manrope-latin.woff2) format('woff2');
+}
+@font-face{
+  font-family:'JetBrains Mono'; font-style:normal; font-weight:500 700; font-display:swap;
+  src:url(../fonts/jetbrainsmono-latin.woff2) format('woff2');
+}

@@ -12,7 +12,7 @@ function loadCore(){
   const ctx = vm.createContext({ console, setTimeout, clearTimeout, crypto: globalThis.crypto });
   ctx.globalThis = ctx;
   for (const file of CORE){
-    const src = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    const src = fs.readFileSync(path.join(__dirname, '..', 'www', file), 'utf8');
     vm.runInContext(src, ctx, { filename: file });
   }
   return ctx.LifeQuest;
