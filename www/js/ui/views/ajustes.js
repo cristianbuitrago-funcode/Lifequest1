@@ -36,6 +36,16 @@
           <div class="field"><label for="stPunish">Monedas perdidas por misión diaria incumplida</label><input type="number" id="stPunish" value="${s.punishmentCoins}"></div>
         </div>
       </div>
+      <div class="panel">
+        <h2>Recordatorios</h2>
+        ${LQ.native.notifications.available ? `
+        <div class="sub">Notificaciones diarias en tu teléfono. Se guardan al instante.</div>
+        ${reminderRow('morning', 'Resumen de la mañana', 'Misiones diarias y hábitos del día')}
+        ${reminderRow('evening', 'Aviso de pendientes', 'Solo si te falta algo; avisa si tu racha está en riesgo')}
+        ` : `
+        <div class="sub">Los recordatorios con notificaciones están disponibles en la app de Android.</div>
+        `}
+      </div>
       <button class="btn" id="saveSettingsBtn">Guardar ajustes</button>
       <div class="panel" style="margin-top:14px;">
         <h2>Copia de seguridad</h2>
@@ -75,9 +85,45 @@
       if (ok) ui.showToast('Ajustes guardados');
       ui.renderAll();
     };
+    el.querySelectorAll('.reminder-row').forEach(row => {
+      row.querySelector('input[type=checkbox]').onchange = () => onReminderChange(row);
+      row.querySelector('input[type=time]').onchange = () => onReminderChange(row);
+    });
     document.getElementById('exportBtn').onclick = exportBackup;
     document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
     document.getElementById('importFile').onchange = (e) => importBackup(e.target);
+  }
+
+  function reminderRow(kind, title, hint){
+    const r = state.settings.reminders[kind];
+    return `
+      <div class="reminder-row" data-kind="${kind}">
+        <label class="toggle">
+          <input type="checkbox" ${r.enabled ? 'checked' : ''}>
+          <span>${title}<small>${hint}</small></span>
+        </label>
+        <input type="time" value="${escapeHtml(r.time)}" aria-label="Hora" ${r.enabled ? '' : 'disabled'}>
+      </div>`;
+  }
+
+  async function onReminderChange(row){
+    const kind = row.dataset.kind;
+    const box = row.querySelector('input[type=checkbox]');
+    const timeEl = row.querySelector('input[type=time]');
+    const r = state.settings.reminders[kind];
+    const turningOn = box.checked && !r.enabled;
+    if (turningOn && !(await LQ.native.notifications.hasPermission(true))){
+      box.checked = false;
+      ui.showToast('Permite las notificaciones de LifeQuest en los ajustes de Android');
+      return;
+    }
+    r.enabled = box.checked;
+    if (timeEl.value) r.time = timeEl.value;
+    timeEl.disabled = !r.enabled;
+    await store.saveSettings();
+    await ui.syncReminders();
+    if (r.enabled) ui.showToast('Recordatorio programado a las ' + r.time);
+    else ui.showToast('Recordatorio desactivado');
   }
 
   function renderCatList(){

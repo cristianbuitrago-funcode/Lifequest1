@@ -106,6 +106,33 @@
     const r = await Game.checkMissedDaily();
     if (r.punished) ui.showToast('Se perdieron monedas por misiones diarias sin completar ayer.');
     ui.renderAll();
+    scheduleReminderSync();
+  }
+
+  // ---------------------------------------------------------------------
+  // Recordatorios: se reprograman al abrir la app, al volver a ella y tras
+  // cada cambio, para que el texto refleje lo que realmente falta.
+  // ---------------------------------------------------------------------
+  let reminderTimer = null;
+  let reminderRun = Promise.resolve();
+  function syncReminders(){
+    if (!LQ.native.notifications.available) return Promise.resolve();
+    reminderRun = reminderRun.then(async () => {
+      try{
+        const r = state.settings.reminders;
+        const wanted = r.morning.enabled || r.evening.enabled;
+        const allowed = wanted && await LQ.native.notifications.hasPermission(false);
+        await LQ.native.notifications.replaceAll(allowed ? LQ.Reminders.plan(state) : []);
+      }catch(e){
+        console.error('LifeQuest: error al programar recordatorios', e);
+      }
+    });
+    return reminderRun;
+  }
+  ui.syncReminders = syncReminders;
+  function scheduleReminderSync(){
+    clearTimeout(reminderTimer);
+    reminderTimer = setTimeout(syncReminders, 800);
   }
 
   // ---------------------------------------------------------------------
@@ -132,8 +159,11 @@
         showTab('resumen');
         return true;
       },
-      onResume: checkDayRollover
+      onResume: () => { checkDayRollover(); scheduleReminderSync(); }
     });
+    LQ.native.notifications.onOpen(() => showTab('misiones'));
+    store.subscribe(scheduleReminderSync);
+    scheduleReminderSync();
     setInterval(checkDayRollover, 60 * 1000);
   }
 

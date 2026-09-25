@@ -12,8 +12,25 @@ dispositivo (IndexedDB) y se conservan entre sesiones.
 La app se empaqueta como aplicación nativa de Android con
 [Capacitor](https://capacitorjs.com): el mismo código de `www/` corre dentro de
 un WebView nativo, con icono, pantalla de inicio, botón "atrás" del sistema,
-barra de estado según el tema, y exportación de copias vía el menú "Compartir".
+barra de estado según el tema, recordatorios diarios con notificaciones y
+exportación de copias vía el menú "Compartir".
 Funciona sin conexión (las fuentes van incluidas).
+
+### Recordatorios diarios
+
+En **Ajustes → Recordatorios** (solo en la app Android) puedes activar dos avisos
+con la hora que quieras:
+
+- **Resumen de la mañana:** cuántas misiones diarias y hábitos tienes hoy, y tu racha.
+- **Aviso de pendientes:** solo si te falta algo; nombra las misiones y hábitos
+  pendientes y avisa si tu racha está en riesgo.
+
+La primera vez Android pide permiso para mostrar notificaciones. Los avisos se
+programan para los próximos 14 días y se recalculan cada vez que abres la app o
+cambias algo, así que el texto refleja lo que de verdad falta. Sobreviven a
+reinicios del teléfono. Usan alarmas inexactas (sin permiso especial), así que
+pueden llegar unos minutos tarde. Si no abres la app en 14 días, dejan de sonar
+hasta la próxima vez que la abras.
 
 ### Instalar el APK en tu teléfono
 
@@ -83,10 +100,11 @@ www/                    App web (lo que Capacitor empaqueta)
   store.js              Persistencia de dominio (misma API que la versión original)
   sync/sync.js          Punto de extensión para nube y cuentas (sin proveedor aún)
   game.js               Acciones de juego (aplica reglas + persiste; sin DOM)
+  reminders.js          Planificador de recordatorios (puro: qué avisar y cuándo)
   ui/common.js          Helpers de interfaz (toast, iconos, categorías)
   ui/character.js       Tarjeta de personaje
   ui/views/*.js         Una vista por pestaña
-  platform/native.js    Integración Android (atrás, barra de estado, compartir)
+  platform/native.js    Integración Android (atrás, barra de estado, compartir, notificaciones)
   app.js                Arranque, pestañas, tema, eventos, sincronía entre pestañas
 android/                Proyecto nativo de Android generado por Capacitor
 assets/                 Imágenes fuente del icono y la pantalla de inicio

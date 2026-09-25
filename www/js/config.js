@@ -24,7 +24,12 @@
       dificil: {xp:50,  coins:12},
       epica:   {xp:100, coins:30}
     },
-    theme: 'system'
+    theme: 'system',
+    // Recordatorios diarios (notificaciones locales en la app Android)
+    reminders: {
+      morning: {enabled:false, time:'08:00'},
+      evening: {enabled:false, time:'20:00'}
+    }
   };
   const DEFAULT_CHARACTER = { totalXp:0, coins:0, streak:0, lastActiveDate:null };
   const HABIT_LADDER = [
@@ -53,6 +58,11 @@
     if (typeof s.punishmentCoins === 'number') out.punishmentCoins = s.punishmentCoins;
     if (s.rewardTable) out.rewardTable = Object.assign(out.rewardTable, s.rewardTable);
     if (s.theme) out.theme = s.theme;
+    if (s.reminders){
+      ['morning','evening'].forEach(k => {
+        if (s.reminders[k]) out.reminders[k] = Object.assign(out.reminders[k], s.reminders[k]);
+      });
+    }
     return out;
   }
 
