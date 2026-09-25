@@ -1,0 +1,10 @@
+{
+  "name": "lifequest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LifeQuest: convierte tus tareas diarias en un RPG. App web estática, sin build ni dependencias.",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node --test tests/*.test.js"
+  }
+}
