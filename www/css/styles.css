@@ -240,3 +240,15 @@ label{ font-size:12px; font-weight:700; color:var(--muted); display:block; margi
 .reminder-row input[type=checkbox]{ width:20px; height:20px; flex-shrink:0; accent-color:var(--accent); }
 .reminder-row input[type=time]{ width:auto; flex-shrink:0; }
 .reminder-row input[type=time]:disabled{ opacity:.5; }
+
+/* Cuenta (Ajustes) */
+.google-btn{ display:inline-flex; align-items:center; gap:10px; background:var(--panel); color:var(--text); border-color:var(--line); }
+.google-btn svg{ background:#fff; border-radius:50%; padding:2px; width:20px; height:20px; }
+.account-row{ display:flex; align-items:center; gap:12px; }
+.account-avatar{
+  width:40px; height:40px; border-radius:50%; flex-shrink:0; display:grid; place-items:center;
+  background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; font-weight:800; font-size:16px;
+}
+.account-info{ display:grid; min-width:0; }
+.account-info b{ font-size:14px; }
+.account-info span{ font-size:12.5px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

@@ -241,6 +241,23 @@
     // Soporte para sincronización (last-write-wins)
     // -----------------------------------------------------------------------
 
+    /** true si el dispositivo solo tiene los datos iniciales (nada propio del usuario). */
+    isPristine(){
+      const s = this.state;
+      const sampleTitles = new Set(SAMPLE_QUESTS.map(q => q.title));
+      return !s.completions.length && !s.habits.length && !s.finance.length &&
+        !(s.character.totalXp || 0) && !(s.character.coins || 0) &&
+        s.quests.every(q => sampleTitles.has(q.title) && !q.lastCompletedDate);
+    },
+
+    /** Vacía los datos locales sin dejar lápidas (no borra nada en la nube). */
+    async clearLocal(){
+      this.meta = Object.assign({}, this.meta, { seeded: true });
+      await this.adapter.replaceAll({ docs: { meta: this.meta }, collections: {}, tombstones: [] });
+      await this.load();
+      this._emit({type:'reset'});
+    },
+
     /** Cambios locales con updatedAt/deletedAt > since (o todo si since es null). */
     async changesSince(since){
       const d = await this.adapter.dump();
@@ -270,6 +287,7 @@
       }
       for (const c of LQ.storage.COLLECTIONS){
         for (const remote of ((changes.records || {})[c] || [])){
+          if (!remote || !remote.id) continue;
           const mine = local[c].get(remote.id);
           const tomb = localTombs.get(c + '/' + remote.id);
           if (tomb && tomb.deletedAt >= (remote.updatedAt || 0)) continue;
@@ -277,6 +295,7 @@
         }
       }
       for (const t of (changes.tombstones || [])){
+        if (!local[t.collection]) continue;
         const mine = local[t.collection] && local[t.collection].get(t.id);
         if (mine && (mine.updatedAt || 0) > t.deletedAt) continue;
         await a.remove(t.collection, t.id, t);

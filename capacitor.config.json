@@ -15,6 +15,12 @@
     "LocalNotifications": {
       "smallIcon": "ic_stat_lifequest",
       "iconColor": "#6d4aff"
+    },
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": [
+        "google.com"
+      ]
     }
   }
 }

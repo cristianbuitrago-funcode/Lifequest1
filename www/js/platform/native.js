@@ -7,6 +7,7 @@
  *   setTheme(theme)              color de iconos de la barra de estado
  *   shareFile(nombre, texto)     guarda un archivo y abre el menú "Compartir"
  *   notifications                recordatorios locales (ver abajo)
+ *   googleSignIn()               login nativo de Google → idToken para Firebase
  */
 (function (LQ) {
   "use strict";
@@ -52,6 +53,21 @@
       }
       return true;
     }
+  };
+
+  // -------------------------------------------------------------------------
+  // Inicio de sesión con Google (@capacitor-firebase/authentication)
+  // Con skipNativeAuth el plugin solo obtiene el token de Google; la sesión se
+  // abre después en el SDK web de Firebase (ver js/cloud/cloud.js).
+  // -------------------------------------------------------------------------
+  native.googleSignIn = async function(){
+    const result = await plugin('FirebaseAuthentication').signInWithGoogle({ skipNativeAuth: true });
+    const idToken = result && result.credential && result.credential.idToken;
+    if (!idToken) throw new Error('Google no devolvió un token de sesión');
+    return idToken;
+  };
+  native.googleSignOut = function(){
+    return plugin('FirebaseAuthentication').signOut();
   };
 
   // -------------------------------------------------------------------------

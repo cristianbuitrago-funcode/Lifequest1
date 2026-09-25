@@ -29,8 +29,22 @@ jobs:
       - name: Pruebas
         run: npm test
 
+      - name: Pruebas de sincronización (emuladores de Firebase)
+        run: npm run test:cloud
+
       - name: Sincronizar web → Android
         run: npm run android:sync
+
+      - name: Clave de firma compartida
+        env:
+          KEYSTORE_B64: ${{ secrets.LIFEQUEST_DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/lifequest-debug.keystore"
+            echo "LIFEQUEST_DEBUG_KEYSTORE=$RUNNER_TEMP/lifequest-debug.keystore" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Sin el secreto LIFEQUEST_DEBUG_KEYSTORE_BASE64 el APK se firma con una clave temporal: no se instalará encima de versiones anteriores y el login de Google no funcionará."
+          fi
 
       - name: Compilar APK (debug)
         working-directory: android
