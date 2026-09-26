@@ -120,6 +120,37 @@
       if (!this.auth) return;
       await this.auth.signOut();
       if (LQ.native.isNative) await LQ.native.googleSignOut().catch(() => {});
+    },
+
+    /**
+     * Elimina la cuenta: borra todos los datos en la nube y la cuenta de
+     * Firebase. Los datos de este dispositivo se conservan (se pueden borrar
+     * desinstalando la app o borrando sus datos).
+     */
+    async deleteAccount(){
+      const firebase = globalThis.firebase;
+      const user = this.auth && this.auth.currentUser;
+      if (!user) throw new Error('No hay ninguna sesión iniciada.');
+      const provider = LQ.cloudProviders.createFirestoreProvider(firebase, this.db, user.uid);
+      LQ.sync.unregister(); // que nada vuelva a subir datos mientras se borra
+      await provider.deleteAll();
+      try{
+        await user.delete();
+      }catch(e){
+        if (e && e.code !== 'auth/requires-recent-login') throw e;
+        // Firebase pide haber iniciado sesión hace poco: se confirma con Google y se reintenta.
+        if (LQ.native.isNative){
+          const idToken = await LQ.native.googleSignIn();
+          await user.reauthenticateWithCredential(firebase.auth.GoogleAuthProvider.credential(idToken));
+        } else {
+          await user.reauthenticateWithPopup(new firebase.auth.GoogleAuthProvider());
+        }
+        await user.delete();
+      }
+      if (LQ.native.isNative) await LQ.native.googleSignOut().catch(() => {});
+      await LQ.store.setMeta({ syncAccount: null, syncPullCursor: null, syncPushedAt: null, syncEmail: null, lastSyncAt: null });
+      this.user = null;
+      this._notify();
     }
   };
 

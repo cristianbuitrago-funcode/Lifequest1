@@ -69,13 +69,27 @@
           // El registro borrado ya no hace falta en la nube; la lápida propaga el borrado.
           if (COLLECTIONS.includes(t.collection)) writes.push(b => b.delete(root.collection(t.collection).doc(String(t.id))));
         });
-        for (let i = 0; i < writes.length; i += BATCH_LIMIT){
-          const batch = db.batch();
-          writes.slice(i, i + BATCH_LIMIT).forEach(w => w(batch));
-          await batch.commit();
-        }
+        await commitAll(writes);
+      },
+
+      /** Borra todos los datos de la cuenta en la nube (para "Eliminar mi cuenta"). */
+      async deleteAll(){
+        const names = ['docs', ...COLLECTIONS, 'tombstones'];
+        const snaps = await Promise.all(names.map(n => root.collection(n).get()));
+        const writes = [];
+        snaps.forEach(snap => snap.docs.forEach(d => writes.push(b => b.delete(d.ref))));
+        await commitAll(writes);
+        return writes.length;
       }
     };
+
+    async function commitAll(writes){
+      for (let i = 0; i < writes.length; i += BATCH_LIMIT){
+        const batch = db.batch();
+        writes.slice(i, i + BATCH_LIMIT).forEach(w => w(batch));
+        await batch.commit();
+      }
+    }
   }
 
   LQ.cloudProviders = Object.assign(LQ.cloudProviders || {}, { createFirestoreProvider });

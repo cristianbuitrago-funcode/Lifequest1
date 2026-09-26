@@ -1,5 +1,8 @@
 # LifeQuest
 
+© 2026 Cristian Camilo Buitrago Espinosa. Todos los derechos reservados
+(ver [LICENSE](LICENSE) y [NOTICE](NOTICE)).
+
 Convierte tus tareas diarias en un RPG: misiones con XP y monedas, niveles, rachas,
 hábitos con escalera de recompensas y un módulo de finanzas personales.
 
@@ -211,3 +214,15 @@ Piezas:
 
 Otro backend (Supabase, API propia…) solo necesita implementar `pull(cursor)` y
 `push(changes)` (ver `www/js/sync/sync.js`).
+
+## Créditos y licencia
+
+- **Titular**: Cristian Camilo Buitrago Espinosa (idea, concepto del juego, reglas
+  y dirección del producto).
+- Desarrollado con asistencia de IA (Claude, de Anthropic).
+- Código propietario: todos los derechos reservados ([LICENSE](LICENSE)).
+  Componentes de terceros bajo sus licencias ([NOTICE](NOTICE)).
+- Términos de uso, política de privacidad y licencias de terceros:
+  `www/legal/` (también accesibles desde Ajustes → Acerca de).
+- Guía para registrar la marca y publicar en Google Play:
+  [docs/publicacion.md](docs/publicacion.md).
