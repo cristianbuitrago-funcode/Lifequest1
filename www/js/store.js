@@ -17,18 +17,22 @@
 (function (LQ) {
   "use strict";
 
-  const { DEFAULT_CHARACTER, SAMPLE_QUESTS, mergeSettings } = LQ.config;
+  const { DEFAULT_CHARACTER, SAMPLE_QUESTS, mergeSettings, mergeProfile } = LQ.config;
   const { todayStr, uid, clone } = LQ.utils;
 
-  const SCHEMA_VERSION = 1;
-  const DOC_KEYS = ['character', 'settings'];
+  const SCHEMA_VERSION = 2;
+  const DOC_KEYS = ['character', 'settings', 'profile'];
 
   function dbName(profile){ return 'lifequest:' + (profile || 'local'); }
 
   const byId = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   const byTsDesc = (a, b) => (b.ts || 0) - (a.ts || 0);
   const byDateDesc = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : byId(b, a));
-  const SORTS = { quests: byId, habits: byId, completions: byTsDesc, finance: byDateDesc };
+  const byDueDate = (a, b) => ((a.dueDate || '') < (b.dueDate || '') ? -1 : (a.dueDate || '') > (b.dueDate || '') ? 1 : byId(a, b));
+  const SORTS = {
+    quests: byId, habits: byId, completions: byTsDesc, finance: byDateDesc,
+    bills: byDueDate, allocations: byTsDesc, inventory: byId, shopProducts: byId
+  };
 
   const store = {
     adapter: null,
@@ -77,16 +81,15 @@
     /** (Re)carga todo el estado desde el adaptador. */
     async load(){
       const a = this.adapter, s = this.state;
-      const [character, settings, quests, completions, habits, finance] = await Promise.all([
-        a.getDoc('character'), a.getDoc('settings'),
-        a.getAll('quests'), a.getAll('completions'), a.getAll('habits'), a.getAll('finance')
+      const COLLECTIONS = LQ.storage.COLLECTIONS;
+      const [character, settings, profile, ...lists] = await Promise.all([
+        a.getDoc('character'), a.getDoc('settings'), a.getDoc('profile'),
+        ...COLLECTIONS.map(c => a.getAll(c))
       ]);
       s.character = Object.assign({}, DEFAULT_CHARACTER, character || {});
       s.settings = mergeSettings(settings);
-      s.quests = quests.sort(SORTS.quests);
-      s.completions = completions.sort(SORTS.completions);
-      s.habits = habits.sort(SORTS.habits);
-      s.finance = finance.sort(SORTS.finance);
+      s.profile = mergeProfile(profile);
+      COLLECTIONS.forEach((c, i) => { s[c] = lists[i].sort(SORTS[c] || byId); });
     },
 
     get storageKind(){ return this.adapter ? this.adapter.kind : 'none'; },
@@ -135,6 +138,28 @@
     },
     saveCharacter(){ return this._saveDoc('character', this.state.character); },
     saveSettings(){ return this._saveDoc('settings', this.state.settings); },
+    saveProfile(){ return this._saveDoc('profile', this.state.profile); },
+
+    // API genérica para las colecciones nuevas (pagos, repartos, inventario, productos).
+    // `doc.id` se respeta si viene dado (p. ej. inventario usa el id del producto).
+    async addRecord(collection, doc){
+      const record = Object.assign({}, doc, { id: doc.id ? String(doc.id) : uid() });
+      this.state[collection].push(record);
+      this.state[collection].sort(SORTS[collection] || byId);
+      await this._putRecord(collection, record);
+      return record;
+    },
+    async updateRecord(collection, id, patch){
+      const r = this.state[collection].find(x => x.id === id); if (!r) return null;
+      Object.assign(r, patch);
+      this.state[collection].sort(SORTS[collection] || byId);
+      await this._putRecord(collection, r);
+      return r;
+    },
+    async deleteRecord(collection, id){
+      this.state[collection] = this.state[collection].filter(x => x.id !== id);
+      await this._removeRecord(collection, id);
+    },
 
     async addQuest(q){
       const doc = Object.assign({
@@ -195,18 +220,17 @@
     // -----------------------------------------------------------------------
     async exportData(){
       const d = await this.adapter.dump();
-      return {
+      const out = {
         app: 'LifeQuest',
         schemaVersion: SCHEMA_VERSION,
         exportedAt: new Date().toISOString(),
         character: d.docs.character || null,
         settings: d.docs.settings || null,
-        quests: d.collections.quests || [],
-        completions: d.collections.completions || [],
-        habits: d.collections.habits || [],
-        finance: d.collections.finance || [],
+        profile: d.docs.profile || null,
         tombstones: d.tombstones || []
       };
+      LQ.storage.COLLECTIONS.forEach(c => { out[c] = d.collections[c] || []; });
+      return out;
     },
 
     async importData(data){
@@ -220,16 +244,16 @@
       const records = (list) => (Array.isArray(list) ? list : [])
         .filter(r => r && typeof r === 'object')
         .map(r => Object.assign({}, r, { id: r.id ? String(r.id) : uid(), updatedAt: r.updatedAt || now }));
+      const collections = {};
+      LQ.storage.COLLECTIONS.forEach(c => { collections[c] = records(data[c]); });
       await this.adapter.replaceAll({
         docs: {
           meta: Object.assign({}, this.meta, { seeded: true }),
           character: Object.assign({}, DEFAULT_CHARACTER, data.character || {}, { updatedAt: now }),
-          settings: Object.assign(mergeSettings(data.settings), { updatedAt: now })
+          settings: Object.assign(mergeSettings(data.settings), { updatedAt: now }),
+          profile: Object.assign(mergeProfile(data.profile), { updatedAt: now })
         },
-        collections: {
-          quests: records(data.quests), completions: records(data.completions),
-          habits: records(data.habits), finance: records(data.finance)
-        },
+        collections,
         tombstones: Array.isArray(data.tombstones) ? data.tombstones : []
       });
       this.meta = await this.adapter.getDoc('meta');
@@ -246,6 +270,7 @@
       const s = this.state;
       const sampleTitles = new Set(SAMPLE_QUESTS.map(q => q.title));
       return !s.completions.length && !s.habits.length && !s.finance.length &&
+        !s.bills.length && !s.allocations.length && !s.inventory.length && !s.shopProducts.length &&
         !(s.character.totalXp || 0) && !(s.character.coins || 0) &&
         s.quests.every(q => sampleTitles.has(q.title) && !q.lastCompletedDate);
     },

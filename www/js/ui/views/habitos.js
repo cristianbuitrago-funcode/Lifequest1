@@ -58,7 +58,8 @@
 
   ui.actions['habit-check-in'] = async (id) => {
     const r = await Game.habitCheckIn(id);
-    if (r && r.bonus > 0) ui.showToast('¡Racha de hábito! +' + r.bonus + ' 🪙');
+    if (r && r.bonus > 0){ ui.sound.play('long'); ui.showToast('¡Racha de hábito! +' + r.bonus + ' 🪙'); }
+    else if (r && r.streak > 0) ui.sound.play('short');
     ui.renderAll();
   };
   ui.actions['delete-habit'] = async (id) => { await store.deleteHabit(id); renderList(); };

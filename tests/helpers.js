@@ -6,7 +6,9 @@ const vm = require('node:vm');
 const CORE = [
   'js/config.js', 'js/utils.js', 'js/rules.js', 'js/state.js',
   'js/storage/adapters.js', 'js/store.js', 'js/sync/sync.js', 'js/game.js',
-  'js/reminders.js', 'js/cloud/firestore-provider.js'
+  'js/reminders.js', 'js/cloud/firestore-provider.js',
+  'js/finance/rules.js', 'js/finance/finance.js',
+  'js/shop/catalog.js', 'js/shop/shop.js'
 ];
 
 function loadCore(){

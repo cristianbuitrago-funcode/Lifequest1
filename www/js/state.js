@@ -5,7 +5,7 @@
 (function (LQ) {
   "use strict";
 
-  const { DEFAULT_CHARACTER, defaultSettings } = LQ.config;
+  const { DEFAULT_CHARACTER, defaultSettings, defaultProfile } = LQ.config;
 
   LQ.createEmptyState = function(){
     return {
@@ -14,7 +14,13 @@
       quests: [],
       completions: [],
       habits: [],
-      finance: []
+      finance: [],
+      // Perfil del jugador: objetos equipados, consumibles activos y estadísticas
+      profile: defaultProfile(),
+      bills: [],          // pagos / obligaciones
+      allocations: [],    // repartos de ingresos entre sobres
+      inventory: [],      // objetos comprados en la tienda
+      shopProducts: []    // productos creados o editados desde "Administrar tienda"
     };
   };
 

@@ -76,11 +76,14 @@
     }).join('');
   }
 
-  ui.actions['complete-quest'] = async (id) => {
+  ui.actions['complete-quest'] = async (id, el) => {
     const r = await Game.completeQuest(id);
     if (!r) return;
-    ui.showToast('+' + r.xp + ' XP · +' + r.coins + ' 🪙 — "' + r.title + '"');
+    ui.floatReward(el, '+' + r.xp + ' XP');
+    ui.sound.play('short');
+    ui.showToast((r.boosted ? '🧪 XP doble · ' : '') + '+' + r.xp + ' XP · +' + r.coins + ' 🪙 — "' + r.title + '"');
     ui.renderAll();
+    if (r.leveledUp) ui.celebrateLevelUp(r.level);
   };
   ui.actions['delete-quest'] = async (id) => { await store.deleteQuest(id); renderList(); };
 

@@ -7,6 +7,26 @@ Es una **app Android** (empaquetada con Capacitor) construida sobre una web
 estática en HTML + CSS + JavaScript puro, sin build. Los datos se guardan en el
 dispositivo (IndexedDB) y se conservan entre sesiones.
 
+## Qué incluye
+
+- **Misiones** diarias y únicas con XP, monedas y castigo por incumplimiento.
+- **Hábitos** con racha y escalera de recompensas.
+- **Finanzas**
+  - *Resumen*: ingresos, gastos, saldo, calendario y movimientos.
+  - *Pagos*: obligaciones (único, diario, semanal, quincenal, mensual o cada N
+    días) con estado automático (pendiente, pagado o vencido), próximos pagos y
+    cuánto necesitas para estar al día. Marcar un pago da XP y monedas, con una
+    celebración.
+  - *Distribución del dinero*: reparte cada ingreso en sobres, en modo
+    automático (porcentajes que deben sumar 100 %) o manual (sin pasarte de lo
+    recibido). Los gastos y pagos pueden salir de un sobre.
+- **Tienda** con las mismas monedas del juego: temas, fondos, avatares, marcos,
+  mascotas, auras, insignias, sonidos, efectos de celebración y objetos RPG
+  (poción de XP doble y escudo de racha). Tiene inventario para equipar o usar
+  lo comprado y una sección para crear, editar y retirar productos. Algunos
+  productos se desbloquean al subir de nivel.
+- **Recordatorios** diarios, **cuenta de Google** y **sincronización** en la nube.
+
 ## App Android (Capacitor)
 
 La app se empaqueta como aplicación nativa de Android con
@@ -103,14 +123,21 @@ www/                    App web (lo que Capacitor empaqueta)
   sync/sync.js          Motor de sincronización con la nube
   cloud/                Firebase: configuración, login con Google y proveedor Firestore
   game.js               Acciones de juego (aplica reglas + persiste; sin DOM)
+  finance/rules.js      Reglas puras de pagos y distribución del dinero
+  finance/finance.js    Acciones de finanzas (pagar, registrar y repartir ingresos)
+  shop/catalog.js       Catálogo base de la Tienda (editar aquí para cambiar productos)
+  shop/shop.js          Compras, inventario, equipar/usar y administración
   reminders.js          Planificador de recordatorios (puro: qué avisar y cuándo)
-  ui/common.js          Helpers de interfaz (toast, iconos, categorías)
+  ui/common.js          Helpers de interfaz (toast, iconos, categorías, formatos)
+  ui/celebrate.js       Celebraciones animadas, modales y "+XP" flotante
+  ui/cosmetics.js       Aplica lo equipado en la Tienda
+  ui/sound.js           Sonidos de recompensa (Web Audio, sin archivos)
   ui/character.js       Tarjeta de personaje
   ui/views/*.js         Una vista por pestaña
   platform/native.js    Integración Android (atrás, barra de estado, compartir, notificaciones)
   app.js                Arranque, pestañas, tema, eventos, sincronía entre pestañas
 android/                Proyecto nativo de Android generado por Capacitor
-assets/                 Imágenes fuente del icono y la pantalla de inicio
+assets/                 Logo original y fuentes del icono y la pantalla de inicio (npm run icons)
 capacitor.config.json   Configuración de Capacitor (id de la app, splash)
 .github/workflows/      Compilación automática del APK
 docs/firebase-setup.md  Guía para crear el proyecto de Firebase

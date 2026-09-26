@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const { loadCore } = require('./helpers');
 
 // Servidor en memoria con reloj propio: imita el cursor por `syncedAt` de Firestore.
+const LQCOLS = loadCore().storage.COLLECTIONS.slice();
+
 function createFakeServer(){
   const data = { docs: new Map(), tombstones: new Map() };
   let clock = 1000;
@@ -23,7 +25,7 @@ function createFakeServer(){
             .map(([k, v]) => { max = Math.max(max, v.syncedAt); return [k, copy(v.data)]; });
           const out = { docs: {}, records: {}, tombstones: [], cursor: null };
           read('docs').forEach(([k, d]) => { out.docs[k] = d; });
-          ['quests', 'completions', 'habits', 'finance'].forEach(c => { out.records[c] = read(c).map(([, d]) => d); });
+          LQCOLS.forEach(c => { out.records[c] = read(c).map(([, d]) => d); });
           out.tombstones = read('tombstones').map(([, d]) => d);
           out.cursor = max || null;
           return out;

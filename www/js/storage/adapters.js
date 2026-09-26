@@ -5,9 +5,9 @@
  * (ni le importa) dónde viven los datos:
  *
  *   kind, persistent
- *   getDoc(key)               -> objeto | null      (documentos únicos: character, settings, meta)
+ *   getDoc(key)               -> objeto | null      (documentos únicos: character, settings, profile, meta)
  *   putDoc(key, value)
- *   getAll(collection)        -> [registros]        (quests, completions, habits, finance)
+ *   getAll(collection)        -> [registros]        (ver COLLECTIONS)
  *   put(collection, record)                         (upsert por record.id)
  *   remove(collection, id, tombstone?)              (borra y opcionalmente deja una "lápida")
  *   getTombstones()           -> [{key, collection, id, deletedAt}]
@@ -20,8 +20,12 @@
 (function (LQ) {
   "use strict";
 
-  const COLLECTIONS = ['quests', 'completions', 'habits', 'finance'];
-  const DB_VERSION = 1;
+  const COLLECTIONS = [
+    'quests', 'completions', 'habits', 'finance',
+    // v2: pagos, distribución del dinero, inventario y productos personalizados de la tienda
+    'bills', 'allocations', 'inventory', 'shopProducts'
+  ];
+  const DB_VERSION = 2; // al subir de versión, onupgradeneeded crea solo los almacenes que faltan
 
   // -------------------------------------------------------------------------
   // IndexedDB — backend principal

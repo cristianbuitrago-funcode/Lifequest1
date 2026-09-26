@@ -3,18 +3,18 @@
   "appName": "LifeQuest",
   "webDir": "www",
   "android": {
-    "backgroundColor": "#0c0b16"
+    "backgroundColor": "#030915"
   },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 600,
       "launchAutoHide": true,
-      "backgroundColor": "#0c0b16",
+      "backgroundColor": "#030915",
       "showSpinner": false
     },
     "LocalNotifications": {
       "smallIcon": "ic_stat_lifequest",
-      "iconColor": "#6d4aff"
+      "iconColor": "#f0c451"
     },
     "FirebaseAuthentication": {
       "skipNativeAuth": true,

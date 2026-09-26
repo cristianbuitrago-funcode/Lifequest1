@@ -7,7 +7,7 @@
     "start": "python3 -m http.server 8080 --directory www",
     "test": "node --test tests/*.test.js",
     "vendor": "cp node_modules/@capacitor/core/dist/capacitor.js www/vendor/capacitor.js && mkdir -p www/vendor/firebase && for f in app auth firestore; do sed 's|//# sourceMappingURL=.*||' node_modules/firebase/firebase-$f-compat.js > www/vendor/firebase/firebase-$f-compat.js; done",
-    "icons": "capacitor-assets generate --android",
+    "icons": "capacitor-assets generate --android --iconBackgroundColor '#030915' --iconBackgroundColorDark '#030915' --splashBackgroundColor '#030915' --splashBackgroundColorDark '#030915' && node tools/optimize-splash.js",
     "android:sync": "npm run vendor && cap sync android",
     "android:open": "cap open android",
     "android:run": "npm run android:sync && cap run android",

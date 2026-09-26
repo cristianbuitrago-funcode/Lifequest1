@@ -19,6 +19,7 @@
     ui.views.misiones.renderList();
     ui.views.habitos.renderList();
     if (isVisible('finanzas')) ui.views.finanzas.render();
+    if (isVisible('tienda')) ui.views.tienda.render();
   };
 
   // ---------------------------------------------------------------------
@@ -30,6 +31,7 @@
     ui.views[tab].render();
     window.scrollTo(0, 0);
   }
+  ui.showTab = showTab;
   document.getElementById('tabs').addEventListener('click', (e) => {
     const btn = e.target.closest('.tab-btn'); if (!btn) return;
     showTab(btn.dataset.tab);
@@ -55,6 +57,7 @@
     // Copia síncrona para aplicar el tema antes del primer pintado (ver index.html).
     try{ localStorage.setItem(THEME_KEY, t || 'system'); }catch(e){}
     LQ.native.setTheme(t);
+    ui.applyCosmetics(); // el tema comprado tiene colores para claro y oscuro
     if (isVisible('resumen')) ui.views.resumen.render(); // el radar usa colores del tema
   };
 
@@ -70,7 +73,11 @@
 
   if (window.matchMedia){
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => { if ((state.settings.theme||'system') === 'system' && isVisible('resumen')) ui.views.resumen.render(); };
+    const onChange = () => {
+      if ((state.settings.theme||'system') !== 'system') return;
+      ui.applyCosmetics();
+      if (isVisible('resumen')) ui.views.resumen.render();
+    };
     if (mq.addEventListener) mq.addEventListener('change', onChange);
   }
 
@@ -140,9 +147,14 @@
     currentDay = today;
     await syncBeforeRules();
     const r = await Game.checkMissedDaily();
-    if (r.punished) ui.showToast('Se perdieron monedas por misiones diarias sin completar ayer.');
+    notifyDailyCheck(r);
     ui.renderAll();
     scheduleReminderSync();
+  }
+
+  function notifyDailyCheck(r){
+    if (r.shielded) ui.showToast('🛡️ Tu escudo de racha te protegió: no perdiste monedas ni tu racha.');
+    else if (r.punished) ui.showToast('Se perdieron monedas por misiones diarias sin completar ayer.');
   }
 
   // ---------------------------------------------------------------------
@@ -188,7 +200,7 @@
     // Sesión de la nube + primera sincronización (como mucho 8 s) antes de las reglas.
     await LQ.cloud.init(8000).catch(e => console.warn('LifeQuest: nube no disponible', e));
     const r = await Game.checkMissedDaily();
-    if (r.punished) ui.showToast('Se perdieron monedas por misiones diarias sin completar ayer.');
+    notifyDailyCheck(r);
     refreshFromState();
     setupCrossTabSync();
     document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDayRollover(); });
