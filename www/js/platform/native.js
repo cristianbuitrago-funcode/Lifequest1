@@ -58,7 +58,7 @@
   // -------------------------------------------------------------------------
   // Inicio de sesión con Google (@capacitor-firebase/authentication)
   // Con skipNativeAuth el plugin solo obtiene el token de Google; la sesión se
-  // abre después en el SDK web de Firebase (ver js/cloud/cloud.js).
+  // abre después en el SDK web de Firebase (ver js/infrastructure/cloud.js).
   // -------------------------------------------------------------------------
   native.googleSignIn = async function(){
     const result = await plugin('FirebaseAuthentication').signInWithGoogle({ skipNativeAuth: true });

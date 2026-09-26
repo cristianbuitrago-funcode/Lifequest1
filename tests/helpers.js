@@ -4,11 +4,11 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const CORE = [
-  'js/config.js', 'js/utils.js', 'js/rules.js', 'js/state.js',
-  'js/storage/adapters.js', 'js/store.js', 'js/sync/sync.js', 'js/game.js',
-  'js/reminders.js', 'js/cloud/firestore-provider.js',
-  'js/finance/rules.js', 'js/finance/finance.js',
-  'js/shop/catalog.js', 'js/shop/shop.js'
+  'js/core/config.js', 'js/core/utils.js', 'js/domain/rules.js', 'js/core/state.js',
+  'js/infrastructure/storage-adapters.js', 'js/infrastructure/store.js', 'js/infrastructure/sync.js', 'js/domain/game.js',
+  'js/domain/reminders.js', 'js/infrastructure/firestore-provider.js',
+  'js/domain/finance-rules.js', 'js/domain/finance.js',
+  'js/domain/shop-catalog.js', 'js/domain/shop.js'
 ];
 
 function loadCore(){

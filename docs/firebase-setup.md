@@ -53,7 +53,7 @@ El plan gratuito de Firebase (Spark) sobra para uso personal.
 
 ## 6. Dárselo al proyecto
 
-- Pega el `firebaseConfig` en [`www/js/cloud/firebase-config.js`](../www/js/cloud/firebase-config.js)
+- Pega el `firebaseConfig` en [`www/js/infrastructure/firebase-config.js`](../www/js/infrastructure/firebase-config.js)
   (reemplazando `LQ.firebaseConfig = null;`).
 - Copia `google-services.json` en `android/app/google-services.json`.
 

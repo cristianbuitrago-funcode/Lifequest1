@@ -213,14 +213,14 @@ Piezas:
 
 | Archivo | Qué hace |
 | --- | --- |
-| `www/js/sync/sync.js` | Motor de sincronización, independiente del proveedor |
-| `www/js/cloud/firestore-provider.js` | Proveedor sobre Firestore: `users/{uid}/…` y cursor por hora del servidor |
-| `www/js/cloud/cloud.js` | Carga Firebase bajo demanda, login con Google y enlace de la cuenta |
-| `www/js/cloud/firebase-config.js` | Tu `firebaseConfig` (null = nube desactivada) |
+| `www/js/infrastructure/sync.js` | Motor de sincronización, independiente del proveedor |
+| `www/js/infrastructure/firestore-provider.js` | Proveedor sobre Firestore: `users/{uid}/…` y cursor por hora del servidor |
+| `www/js/infrastructure/cloud.js` | Carga Firebase bajo demanda, login con Google y enlace de la cuenta |
+| `www/js/infrastructure/firebase-config.js` | Tu `firebaseConfig` (null = nube desactivada) |
 | `firestore.rules`, `firebase.json` | Reglas de seguridad y emuladores locales |
 
 Otro backend (Supabase, API propia…) solo necesita implementar `pull(cursor)` y
-`push(changes)` (ver `www/js/sync/sync.js`).
+`push(changes)` (ver `www/js/infrastructure/sync.js`).
 
 ## Créditos y licencia
 
