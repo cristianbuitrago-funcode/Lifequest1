@@ -5,6 +5,9 @@
 (function (LQ) {
   "use strict";
 
+  const APP_VERSION = '1.2.1';
+  const APP_OWNER = 'Cristian Camilo Buitrago Espinosa';
+
   const DEFAULT_CATEGORIES = [
     {id:'salud', name:'Salud', color:'#1a8f63'},
     {id:'estudio', name:'Estudio', color:'#6d4aff'},
@@ -125,6 +128,7 @@
   }
 
   LQ.config = {
+    APP_VERSION, APP_OWNER,
     DEFAULT_CATEGORIES, DEFAULT_SETTINGS, DEFAULT_CHARACTER, HABIT_LADDER, DIFF_LABELS, SAMPLE_QUESTS,
     BILL_FREQUENCIES, BILL_STATUS_LABELS, DEFAULT_PROFILE,
     defaultSettings, mergeSettings, defaultProfile, mergeProfile

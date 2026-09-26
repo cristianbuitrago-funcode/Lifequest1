@@ -1,0 +1,16 @@
+LifeQuest
+Copyright (c) 2026 Cristian Camilo Buitrago Espinosa. Todos los derechos reservados.
+
+Este producto incluye software y recursos de terceros, cada uno bajo su propia licencia:
+
+- Capacitor y plugins oficiales (@capacitor/core, android, app, filesystem, share,
+  splash-screen, local-notifications) — Ionic — MIT License
+- @capacitor-firebase/authentication — Capawesome — Apache License 2.0
+- Firebase JavaScript SDK (app, auth, firestore) — Google LLC — Apache License 2.0
+- Fuentes Cinzel (Natanael Gama), Manrope (Mikhail Sharanda) y JetBrains Mono
+  (JetBrains) — SIL Open Font License 1.1
+
+Textos de las licencias:
+- MIT: https://opensource.org/license/mit
+- Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0
+- SIL OFL 1.1: https://openfontlicense.org

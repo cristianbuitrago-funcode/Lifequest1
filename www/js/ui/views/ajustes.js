@@ -58,6 +58,18 @@
         </div>
         <div class="storage-info">Almacenamiento: ${escapeHtml(STORAGE_LABELS[store.storageKind] || store.storageKind)}</div>
       </div>
+      <div class="panel about-panel">
+        <div class="about-head">
+          <img src="img/logo-192.png" alt="" width="52" height="52">
+          <div><h2>LifeQuest</h2><div class="sub" style="margin:0">Versión ${escapeHtml(LQ.config.APP_VERSION)}</div></div>
+        </div>
+        <p class="about-copy">© 2026 ${escapeHtml(LQ.config.APP_OWNER)}. Todos los derechos reservados.</p>
+        <div class="about-links">
+          <a href="legal/terminos.html">Términos de uso</a>
+          <a href="legal/privacidad.html">Política de privacidad</a>
+          <a href="legal/licencias.html">Licencias de terceros</a>
+        </div>
+      </div>
     `;
     renderAccount();
     renderCatList();
@@ -143,7 +155,8 @@
         <div class="backup-actions" style="margin-top:10px;">
           <button class="btn ghost small" id="syncNowBtn" ${LQ.sync.status.state === 'syncing' ? 'disabled' : ''}>Sincronizar ahora</button>
           <button class="btn ghost small" id="signOutBtn">Cerrar sesión</button>
-        </div>`;
+        </div>
+        <button class="link-danger" id="deleteAccountBtn">Eliminar mi cuenta y mis datos de la nube</button>`;
     }
     box.innerHTML = `<h2>Cuenta y sincronización</h2>` + body;
 
@@ -163,6 +176,23 @@
     if (syncBtn) syncBtn.onclick = async () => {
       try{ await LQ.sync.syncNow(); ui.showToast('Datos sincronizados'); }
       catch(e){ ui.showToast('No se pudo sincronizar'); }
+    };
+    const del = document.getElementById('deleteAccountBtn');
+    if (del) del.onclick = async () => {
+      const ok = confirm('Se eliminarán tu cuenta de LifeQuest y TODOS tus datos guardados en la nube. ' +
+        'Los datos de este dispositivo se conservan. Esta acción no se puede deshacer. ¿Continuar?');
+      if (!ok) return;
+      const word = prompt('Para confirmar, escribe ELIMINAR');
+      if ((word || '').trim().toUpperCase() !== 'ELIMINAR'){ ui.showToast('Eliminación cancelada'); return; }
+      del.disabled = true;
+      try{
+        await cloud.deleteAccount();
+        ui.showToast('Tu cuenta y tus datos de la nube fueron eliminados');
+      }catch(e){
+        console.error(e);
+        if (!/cancel/i.test(String(e && (e.code || e.message)))) ui.showToast('No se pudo eliminar la cuenta: ' + ((e && e.message) || 'error'));
+        del.disabled = false;
+      }
     };
     const signOut = document.getElementById('signOutBtn');
     if (signOut) signOut.onclick = async () => {

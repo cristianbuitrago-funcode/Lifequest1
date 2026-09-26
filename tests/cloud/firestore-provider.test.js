@@ -82,3 +82,20 @@ test('las reglas impiden leer datos de otra cuenta', async () => {
     (e) => e.code === 'permission-denied'
   );
 });
+
+test('eliminar la cuenta borra todos sus datos en la nube', async () => {
+  const run = Date.now().toString(36);
+  const conn = await connect('d' + run, 'del-' + run);
+  const A = await device(conn);
+  await A.store.addHabit({ title: 'Leer' });
+  await A.Finance.addBill({ name: 'Internet', amount: 100, frequency: 'mensual', dueDate: '2026-10-05' });
+  await A.sync.syncNow();
+  const root = conn.db.collection('users').doc(conn.uid);
+  assert.ok((await root.collection('quests').get()).size > 0);
+
+  const deleted = await createFirestoreProvider(firebase, conn.db, conn.uid).deleteAll();
+  assert.ok(deleted > 0);
+  for (const name of ['docs', 'quests', 'habits', 'bills', 'tombstones']){
+    assert.equal((await root.collection(name).get()).size, 0, name + ' vacía');
+  }
+});
