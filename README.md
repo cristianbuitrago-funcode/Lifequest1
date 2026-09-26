@@ -58,6 +58,9 @@ hasta la próxima vez que la abras.
 ### Instalar el APK en tu teléfono
 
 1. Descarga el APK:
+   - desde **Releases**, en la página principal del repositorio: cada
+     actualización de `main` publica ahí `LifeQuest-<versión>.apk` (requiere el
+     secreto de la clave de firma, paso 7 de docs/firebase-setup.md), o
    - desde **GitHub → Actions → "APK Android" → la última ejecución →
      Artifacts → `LifeQuest-debug-apk`** (se compila en cada push), o
    - compílalo tú mismo (ver abajo).
