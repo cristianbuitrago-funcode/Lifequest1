@@ -37,8 +37,7 @@ La marca protege el **nombre y el logo** (el derecho de autor no protege nombres
 4. **Política de privacidad pública**: Google exige una URL. El texto está en
    `www/legal/privacidad.html`; publícalo, por ejemplo, con GitHub Pages (en un
    repositorio público aparte si el principal pasa a privado) o Google Sites.
-   **Antes, reemplaza `[correo de contacto]`** en los archivos de `www/legal/` y
-   en `LICENSE`.
+   El correo de contacto ya está en `www/legal/` y en `LICENSE`.
 5. **Eliminación de cuenta**: la app ya permite eliminar la cuenta desde Ajustes
    → Cuenta y sincronización → "Eliminar mi cuenta". Google también pide un
    enlace web donde solicitarla: puede ser la sección 5 de la política de

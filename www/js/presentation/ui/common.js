@@ -33,4 +33,25 @@
   ui.catName = (id) => { const c = ui.catById(id); return c ? c.name : '—'; };
   ui.catColor = (id) => { const c = ui.catById(id); return c ? c.color : '#8890b0'; };
   ui.categoryOptions = () => state.settings.categories.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
+
+  // Fachada de compatibilidad para las vistas existentes.
+  // La arquitectura real sigue viviendo en LQ.app.*; estos alias solo
+  // evitan que una vista antigua quede acoplada a una implementación concreta.
+  ui.renderAll = (...args) => {
+    if (LQ.app && LQ.app.renderer && typeof LQ.app.renderer.renderEverything === 'function') {
+      return LQ.app.renderer.renderEverything(...args);
+    }
+  };
+
+  ui.showTab = (name) => {
+    if (LQ.app && LQ.app.router && typeof LQ.app.router.activate === 'function') {
+      return LQ.app.router.activate(name);
+    }
+  };
+
+  ui.applyTheme = (theme) => {
+    if (LQ.app && LQ.app.theme && typeof LQ.app.theme.apply === 'function') {
+      return LQ.app.theme.apply(theme);
+    }
+  };
 })(globalThis.LifeQuest = globalThis.LifeQuest || {});

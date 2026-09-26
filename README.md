@@ -1,5 +1,9 @@
 # LifeQuest
 
+### [⬇️ Descargar la app para Android (APK)](https://github.com/cristianbuitrago-funcode/Lifequest1/releases/latest/download/LifeQuest.apk)
+
+Ábrelo en el teléfono para instalarlo; se instala encima de la versión anterior y conserva tus datos.
+
 © 2026 Cristian Camilo Buitrago Espinosa. Todos los derechos reservados
 (ver [LICENSE](LICENSE) y [NOTICE](NOTICE)).
 
@@ -58,6 +62,9 @@ hasta la próxima vez que la abras.
 ### Instalar el APK en tu teléfono
 
 1. Descarga el APK:
+   - desde **Releases**, en la página principal del repositorio: cada
+     actualización de `main` publica ahí `LifeQuest.apk` (requiere el
+     secreto de la clave de firma, paso 7 de docs/firebase-setup.md), o
    - desde **GitHub → Actions → "APK Android" → la última ejecución →
      Artifacts → `LifeQuest-debug-apk`** (se compila en cada push), o
    - compílalo tú mismo (ver abajo).
@@ -206,14 +213,14 @@ Piezas:
 
 | Archivo | Qué hace |
 | --- | --- |
-| `www/js/sync/sync.js` | Motor de sincronización, independiente del proveedor |
-| `www/js/cloud/firestore-provider.js` | Proveedor sobre Firestore: `users/{uid}/…` y cursor por hora del servidor |
-| `www/js/cloud/cloud.js` | Carga Firebase bajo demanda, login con Google y enlace de la cuenta |
-| `www/js/cloud/firebase-config.js` | Tu `firebaseConfig` (null = nube desactivada) |
+| `www/js/infrastructure/sync.js` | Motor de sincronización, independiente del proveedor |
+| `www/js/infrastructure/firestore-provider.js` | Proveedor sobre Firestore: `users/{uid}/…` y cursor por hora del servidor |
+| `www/js/infrastructure/cloud.js` | Carga Firebase bajo demanda, login con Google y enlace de la cuenta |
+| `www/js/infrastructure/firebase-config.js` | Tu `firebaseConfig` (null = nube desactivada) |
 | `firestore.rules`, `firebase.json` | Reglas de seguridad y emuladores locales |
 
 Otro backend (Supabase, API propia…) solo necesita implementar `pull(cursor)` y
-`push(changes)` (ver `www/js/sync/sync.js`).
+`push(changes)` (ver `www/js/infrastructure/sync.js`).
 
 ## Créditos y licencia
 

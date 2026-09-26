@@ -9,7 +9,7 @@ const { loadCore } = require('../helpers');
 // El núcleo corre en un contexto vm con otro Object.prototype, y Firestore solo
 // acepta objetos planos del contexto principal: el proveedor se carga aquí.
 globalThis.LifeQuest = { storage: { COLLECTIONS: ['quests', 'completions', 'habits', 'finance', 'bills', 'allocations', 'inventory', 'shopProducts'] } };
-require('../../www/js/cloud/firestore-provider.js');
+require('../../www/js/infrastructure/firestore-provider.js');
 const { createFirestoreProvider } = globalThis.LifeQuest.cloudProviders;
 
 const token = (sub) => JSON.stringify({ sub, email: sub + '@example.com', email_verified: true });
