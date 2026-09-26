@@ -18,6 +18,7 @@
     const el = document.getElementById('view-ajustes');
     const s = state.settings;
     el.innerHTML = `
+      <div class="panel" id="accountPanel"></div>
       <div class="panel">
         <h2>Categorías (pilares)</h2>
         <div class="sub">Se usan en misiones, hábitos y finanzas</div>
@@ -58,6 +59,7 @@
         <div class="storage-info">Almacenamiento: ${escapeHtml(STORAGE_LABELS[store.storageKind] || store.storageKind)}</div>
       </div>
     `;
+    renderAccount();
     renderCatList();
     renderRewardGrid();
     document.getElementById('addCatBtn').onclick = () => {
@@ -92,6 +94,90 @@
     document.getElementById('exportBtn').onclick = exportBackup;
     document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
     document.getElementById('importFile').onchange = (e) => importBackup(e.target);
+  }
+
+  // -------------------------------------------------------------------------
+  // Cuenta y sincronización
+  // -------------------------------------------------------------------------
+  const GOOGLE_ICON = '<svg viewBox="0 0 48 48" width="16" height="16" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+
+  function timeAgo(ms){
+    if (!ms) return 'nunca';
+    const s = Math.round((Date.now() - ms) / 1000);
+    if (s < 60) return 'hace un momento';
+    if (s < 3600) return 'hace ' + Math.round(s / 60) + ' min';
+    if (s < 86400) return 'hace ' + Math.round(s / 3600) + ' h';
+    return new Date(ms).toLocaleDateString();
+  }
+
+  function syncStatusText(){
+    const st = LQ.sync.status;
+    if (st.state === 'syncing') return 'Sincronizando…';
+    if (st.state === 'offline') return 'Sin conexión: se sincronizará cuando vuelva.';
+    if (st.state === 'error') return 'Error al sincronizar' + (st.error && st.error.message ? ': ' + st.error.message : '') + '. Se reintentará.';
+    return 'Sincronizado ' + timeAgo(st.lastSyncAt || (store.meta && store.meta.lastSyncAt));
+  }
+
+  function renderAccount(){
+    const box = document.getElementById('accountPanel');
+    if (!box) return;
+    const cloud = LQ.cloud;
+    let body;
+    if (!cloud.configured){
+      body = `<div class="sub">Inicia sesión con Google para guardar tus datos en la nube y usarlos en varios dispositivos. La nube aún no está configurada en esta versión de la app.</div>`;
+    } else if (!cloud.user){
+      body = `
+        <div class="sub">Inicia sesión con Google para guardar tus datos en la nube y usarlos en varios dispositivos. Lo que ya tienes en este dispositivo se conserva y se sube a tu cuenta.</div>
+        <button class="btn google-btn" id="signInBtn">${GOOGLE_ICON}<span>Iniciar sesión con Google</span></button>`;
+    } else {
+      const u = cloud.user;
+      body = `
+        <div class="account-row">
+          <div class="account-avatar">${escapeHtml(((u.name || u.email || '?').trim()[0] || '?').toUpperCase())}</div>
+          <div class="account-info">
+            <b>${escapeHtml(u.name || u.email || 'Cuenta de Google')}</b>
+            ${u.name && u.email ? `<span>${escapeHtml(u.email)}</span>` : ''}
+          </div>
+        </div>
+        <div class="storage-info" id="syncStatus">${escapeHtml(syncStatusText())}</div>
+        <div class="backup-actions" style="margin-top:10px;">
+          <button class="btn ghost small" id="syncNowBtn" ${LQ.sync.status.state === 'syncing' ? 'disabled' : ''}>Sincronizar ahora</button>
+          <button class="btn ghost small" id="signOutBtn">Cerrar sesión</button>
+        </div>`;
+    }
+    box.innerHTML = `<h2>Cuenta y sincronización</h2>` + body;
+
+    const signIn = document.getElementById('signInBtn');
+    if (signIn) signIn.onclick = async () => {
+      signIn.disabled = true;
+      try{
+        await cloud.signIn();
+      }catch(e){
+        console.error(e);
+        if (!/cancel/i.test(String(e && (e.code || e.message)))) ui.showToast(signInErrorText(e));
+      }finally{
+        signIn.disabled = false;
+      }
+    };
+    const syncBtn = document.getElementById('syncNowBtn');
+    if (syncBtn) syncBtn.onclick = async () => {
+      try{ await LQ.sync.syncNow(); ui.showToast('Datos sincronizados'); }
+      catch(e){ ui.showToast('No se pudo sincronizar'); }
+    };
+    const signOut = document.getElementById('signOutBtn');
+    if (signOut) signOut.onclick = async () => {
+      if (!confirm('¿Cerrar sesión? Tus datos se quedan en este dispositivo y en la nube.')) return;
+      await cloud.signOut();
+      ui.showToast('Sesión cerrada');
+    };
+  }
+
+  function signInErrorText(e){
+    const code = (e && e.code) || '';
+    if (code === 'auth/unauthorized-domain') return 'Este dominio no está autorizado en Firebase (Authentication → Settings).';
+    if (code === 'auth/popup-blocked') return 'El navegador bloqueó la ventana de Google. Permite las ventanas emergentes.';
+    if (code === 'auth/network-request-failed') return 'Sin conexión. Inténtalo de nuevo.';
+    return (e && e.message) || 'No se pudo iniciar sesión';
   }
 
   function reminderRow(kind, title, hint){
@@ -203,5 +289,5 @@
     renderCatList();
   };
 
-  ui.views.ajustes = { render };
+  ui.views.ajustes = { render, renderAccount };
 })(globalThis.LifeQuest = globalThis.LifeQuest || {});

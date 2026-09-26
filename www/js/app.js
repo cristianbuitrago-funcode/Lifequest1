@@ -19,6 +19,7 @@
     ui.views.misiones.renderList();
     ui.views.habitos.renderList();
     if (isVisible('finanzas')) ui.views.finanzas.render();
+    if (isVisible('tienda')) ui.views.tienda.render();
   };
 
   // ---------------------------------------------------------------------
@@ -30,6 +31,7 @@
     ui.views[tab].render();
     window.scrollTo(0, 0);
   }
+  ui.showTab = showTab;
   document.getElementById('tabs').addEventListener('click', (e) => {
     const btn = e.target.closest('.tab-btn'); if (!btn) return;
     showTab(btn.dataset.tab);
@@ -55,6 +57,7 @@
     // Copia síncrona para aplicar el tema antes del primer pintado (ver index.html).
     try{ localStorage.setItem(THEME_KEY, t || 'system'); }catch(e){}
     LQ.native.setTheme(t);
+    ui.applyCosmetics(); // el tema comprado tiene colores para claro y oscuro
     if (isVisible('resumen')) ui.views.resumen.render(); // el radar usa colores del tema
   };
 
@@ -70,7 +73,11 @@
 
   if (window.matchMedia){
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => { if ((state.settings.theme||'system') === 'system' && isVisible('resumen')) ui.views.resumen.render(); };
+    const onChange = () => {
+      if ((state.settings.theme||'system') !== 'system') return;
+      ui.applyCosmetics();
+      if (isVisible('resumen')) ui.views.resumen.render();
+    };
     if (mq.addEventListener) mq.addEventListener('change', onChange);
   }
 
@@ -78,6 +85,14 @@
   // Varias pestañas abiertas: cuando una guarda, las demás recargan el
   // estado para no sobrescribir datos con una copia desactualizada.
   // ---------------------------------------------------------------------
+  // Repinta todo tras cambios que no vienen de esta pantalla (otra pestaña, la nube).
+  function refreshFromState(){
+    ui.applyTheme(state.settings.theme);
+    ui.renderAll();
+    if (isVisible('misiones')) ui.views.misiones.render();
+    if (isVisible('habitos')) ui.views.habitos.render();
+  }
+
   function setupCrossTabSync(){
     if (typeof BroadcastChannel === 'undefined') return;
     const channel = new BroadcastChannel('lifequest:' + store.profile);
@@ -87,12 +102,39 @@
       clearTimeout(reloading);
       reloading = setTimeout(async () => {
         await store.load();
-        ui.applyTheme(state.settings.theme);
-        ui.renderAll();
-        if (isVisible('misiones')) ui.views.misiones.render();
-        if (isVisible('habitos')) ui.views.habitos.render();
+        refreshFromState();
       }, 50);
     };
+  }
+
+  // ---------------------------------------------------------------------
+  // Nube: sincroniza tras cada cambio (agrupando 2 s), al volver a la app y
+  // al recuperar conexión. Sin cuenta o sin configurar, no hace nada.
+  // ---------------------------------------------------------------------
+  let cloudTimer = null;
+  function syncCloudNow(){
+    return LQ.sync.syncNow().catch(e => console.warn('LifeQuest: sincronización fallida', e));
+  }
+  function scheduleCloudSync(){
+    if (!LQ.sync.enabled) return;
+    clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(syncCloudNow, 2000);
+  }
+  // Antes de aplicar castigos conviene traer lo hecho en otros dispositivos,
+  // pero sin bloquear la app si no hay conexión.
+  function syncBeforeRules(){
+    if (!LQ.sync.enabled) return Promise.resolve();
+    return Promise.race([syncCloudNow(), new Promise(r => setTimeout(r, 6000))]);
+  }
+
+  function setupCloud(){
+    store.subscribe(() => { if (!LQ.sync.applying) scheduleCloudSync(); });
+    LQ.sync.onStatus((status, extra) => {
+      if (extra.pulled) refreshFromState();
+      if (isVisible('ajustes')) ui.views.ajustes.renderAccount();
+    });
+    LQ.cloud.onChange(() => { if (isVisible('ajustes')) ui.views.ajustes.renderAccount(); });
+    window.addEventListener('online', syncCloudNow);
   }
 
   // ---------------------------------------------------------------------
@@ -103,10 +145,16 @@
     const today = LQ.utils.todayStr();
     if (today === currentDay) return;
     currentDay = today;
+    await syncBeforeRules();
     const r = await Game.checkMissedDaily();
-    if (r.punished) ui.showToast('Se perdieron monedas por misiones diarias sin completar ayer.');
+    notifyDailyCheck(r);
     ui.renderAll();
     scheduleReminderSync();
+  }
+
+  function notifyDailyCheck(r){
+    if (r.shielded) ui.showToast('🛡️ Tu escudo de racha te protegió: no perdiste monedas ni tu racha.');
+    else if (r.punished) ui.showToast('Se perdieron monedas por misiones diarias sin completar ayer.');
   }
 
   // ---------------------------------------------------------------------
@@ -147,9 +195,13 @@
     });
     if (!store.isPersistent) ui.showToast('Este navegador no permite guardar datos: se perderán al recargar.');
     ui.applyTheme(state.settings.theme);
-    const r = await Game.checkMissedDaily();
-    if (r.punished) ui.showToast('Se perdieron monedas por misiones diarias sin completar ayer.');
     ui.renderAll();
+    setupCloud();
+    // Sesión de la nube + primera sincronización (como mucho 8 s) antes de las reglas.
+    await LQ.cloud.init(8000).catch(e => console.warn('LifeQuest: nube no disponible', e));
+    const r = await Game.checkMissedDaily();
+    notifyDailyCheck(r);
+    refreshFromState();
     setupCrossTabSync();
     document.addEventListener('visibilitychange', () => { if (!document.hidden) checkDayRollover(); });
     LQ.native.init({
@@ -159,7 +211,7 @@
         showTab('resumen');
         return true;
       },
-      onResume: () => { checkDayRollover(); scheduleReminderSync(); }
+      onResume: async () => { await syncBeforeRules(); checkDayRollover(); scheduleReminderSync(); }
     });
     LQ.native.notifications.onOpen(() => showTab('misiones'));
     store.subscribe(scheduleReminderSync);

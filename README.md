@@ -7,6 +7,26 @@ Es una **app Android** (empaquetada con Capacitor) construida sobre una web
 estática en HTML + CSS + JavaScript puro, sin build. Los datos se guardan en el
 dispositivo (IndexedDB) y se conservan entre sesiones.
 
+## Qué incluye
+
+- **Misiones** diarias y únicas con XP, monedas y castigo por incumplimiento.
+- **Hábitos** con racha y escalera de recompensas.
+- **Finanzas**
+  - *Resumen*: ingresos, gastos, saldo, calendario y movimientos.
+  - *Pagos*: obligaciones (único, diario, semanal, quincenal, mensual o cada N
+    días) con estado automático (pendiente, pagado o vencido), próximos pagos y
+    cuánto necesitas para estar al día. Marcar un pago da XP y monedas, con una
+    celebración.
+  - *Distribución del dinero*: reparte cada ingreso en sobres, en modo
+    automático (porcentajes que deben sumar 100 %) o manual (sin pasarte de lo
+    recibido). Los gastos y pagos pueden salir de un sobre.
+- **Tienda** con las mismas monedas del juego: temas, fondos, avatares, marcos,
+  mascotas, auras, insignias, sonidos, efectos de celebración y objetos RPG
+  (poción de XP doble y escudo de racha). Tiene inventario para equipar o usar
+  lo comprado y una sección para crear, editar y retirar productos. Algunos
+  productos se desbloquean al subir de nivel.
+- **Recordatorios** diarios, **cuenta de Google** y **sincronización** en la nube.
+
 ## App Android (Capacitor)
 
 La app se empaqueta como aplicación nativa de Android con
@@ -42,7 +62,9 @@ hasta la próxima vez que la abras.
    origen desconocido" para la app con la que lo abras (Archivos, Chrome…).
 
 Es un APK *debug*, firmado con una clave de desarrollo: sirve para uso
-personal. Para publicarlo en Google Play hace falta un build *release* firmado
+personal. Para que los APK de Actions se instalen encima de los anteriores (y
+funcione el login con Google) hay que guardar la clave como secreto de GitHub:
+ver el paso 7 de [docs/firebase-setup.md](docs/firebase-setup.md). Para publicarlo en Google Play hace falta un build *release* firmado
 con tu propia clave (`./gradlew bundleRelease` + keystore).
 
 ### Compilar
@@ -90,7 +112,7 @@ www/                    App web (lo que Capacitor empaqueta)
  index.html             Estructura de la página y orden de carga de scripts
  css/                   Estilos (tema claro/oscuro) y fuentes locales
  fonts/                 Cinzel, Manrope, JetBrains Mono (OFL)
- vendor/capacitor.js    Runtime de Capacitor (copiado de @capacitor/core)
+ vendor/                Runtime de Capacitor y SDK de Firebase (copiados de node_modules)
  js/
   config.js             Valores por defecto (categorías, recompensas, escalera de hábitos)
   utils.js              Fechas (locales), ids, escape de HTML
@@ -98,18 +120,28 @@ www/                    App web (lo que Capacitor empaqueta)
   state.js              Estado en memoria
   storage/adapters.js   Backends: IndexedDB → localStorage → memoria
   store.js              Persistencia de dominio (misma API que la versión original)
-  sync/sync.js          Punto de extensión para nube y cuentas (sin proveedor aún)
+  sync/sync.js          Motor de sincronización con la nube
+  cloud/                Firebase: configuración, login con Google y proveedor Firestore
   game.js               Acciones de juego (aplica reglas + persiste; sin DOM)
+  finance/rules.js      Reglas puras de pagos y distribución del dinero
+  finance/finance.js    Acciones de finanzas (pagar, registrar y repartir ingresos)
+  shop/catalog.js       Catálogo base de la Tienda (editar aquí para cambiar productos)
+  shop/shop.js          Compras, inventario, equipar/usar y administración
   reminders.js          Planificador de recordatorios (puro: qué avisar y cuándo)
-  ui/common.js          Helpers de interfaz (toast, iconos, categorías)
+  ui/common.js          Helpers de interfaz (toast, iconos, categorías, formatos)
+  ui/celebrate.js       Celebraciones animadas, modales y "+XP" flotante
+  ui/cosmetics.js       Aplica lo equipado en la Tienda
+  ui/sound.js           Sonidos de recompensa (Web Audio, sin archivos)
   ui/character.js       Tarjeta de personaje
   ui/views/*.js         Una vista por pestaña
   platform/native.js    Integración Android (atrás, barra de estado, compartir, notificaciones)
   app.js                Arranque, pestañas, tema, eventos, sincronía entre pestañas
 android/                Proyecto nativo de Android generado por Capacitor
-assets/                 Imágenes fuente del icono y la pantalla de inicio
+assets/                 Logo original y fuentes del icono y la pantalla de inicio (npm run icons)
 capacitor.config.json   Configuración de Capacitor (id de la app, splash)
 .github/workflows/      Compilación automática del APK
+docs/firebase-setup.md  Guía para crear el proyecto de Firebase
+firestore.rules         Reglas de seguridad de la base de datos en la nube
 tests/                  Pruebas de reglas y persistencia (Node)
 ```
 
@@ -138,15 +170,44 @@ bloquean `import` en `file://`.
 - Con varias pestañas abiertas, un `BroadcastChannel` hace que las demás recarguen
   el estado cuando una guarda, para no pisar datos.
 
-## Preparado para nube y cuentas
+## Cuenta de Google y sincronización en la nube
 
-- Cada registro tiene un id único global (prefijo de tiempo + aleatorio) y `updatedAt`.
-- Los borrados dejan una lápida (`tombstones`) con `deletedAt`.
-- `store.changesSince(ts)` y `store.applyRemote(cambios)` implementan la fusión
-  *last-write-wins*.
-- `LifeQuest.sync.register(proveedor)` + `LifeQuest.sync.syncNow()` hacen pull →
-  merge → push. Un proveedor solo necesita `getUser()`, `pull(since)` y
-  `push(changes)` (ver `js/sync/sync.js`), por ejemplo sobre Supabase o Firebase.
-- `store.init({ profile: userId })` aísla los datos de cada cuenta en su propia base
-  local (`lifequest:<userId>`).
-- Cualquier backend puede implementar la interfaz de `js/storage/adapters.js`.
+Con **Ajustes → Cuenta y sincronización → Iniciar sesión con Google** los datos
+se guardan en Firebase (Cloud Firestore) y se sincronizan entre dispositivos.
+Sin iniciar sesión, o si Firebase no está configurado, la app sigue siendo
+100 % local. La primera vez hay que crear el proyecto de Firebase:
+**[docs/firebase-setup.md](docs/firebase-setup.md)**.
+
+Cómo funciona:
+
+- La fuente de verdad sigue siendo el almacenamiento local: la app funciona
+  igual sin conexión y sincroniza al abrirse, al volver a ella, al recuperar la
+  conexión y unos segundos después de cada cambio.
+- Cada sincronización baja lo nuevo de la nube, lo fusiona y sube lo local.
+  Los conflictos se resuelven registro a registro: **gana el cambio más
+  reciente**. Los borrados viajan como "lápidas".
+- Al iniciar sesión en un dispositivo nuevo que solo tiene las misiones de
+  ejemplo, se descartan para no duplicarlas. Si el dispositivo ya tenía datos
+  propios, se fusionan con los de la cuenta.
+- Antes de aplicar los castigos del día se sincroniza (máximo 6–8 s), para no
+  castigar una misión que ya completaste en otro dispositivo.
+- En Android el login es nativo (selector de cuentas de Google). En la web usa
+  una ventana emergente y requiere http/https (`npm start`), no `file://`.
+- Cada cuenta solo puede leer y escribir sus datos (`firestore.rules`).
+
+Limitación conocida: el personaje (XP, monedas, racha) es un único registro. Si
+usas dos dispositivos **sin conexión a la vez** y ganas XP en ambos, al
+sincronizar se queda el más reciente.
+
+Piezas:
+
+| Archivo | Qué hace |
+| --- | --- |
+| `www/js/sync/sync.js` | Motor de sincronización, independiente del proveedor |
+| `www/js/cloud/firestore-provider.js` | Proveedor sobre Firestore: `users/{uid}/…` y cursor por hora del servidor |
+| `www/js/cloud/cloud.js` | Carga Firebase bajo demanda, login con Google y enlace de la cuenta |
+| `www/js/cloud/firebase-config.js` | Tu `firebaseConfig` (null = nube desactivada) |
+| `firestore.rules`, `firebase.json` | Reglas de seguridad y emuladores locales |
+
+Otro backend (Supabase, API propia…) solo necesita implementar `pull(cursor)` y
+`push(changes)` (ver `www/js/sync/sync.js`).
