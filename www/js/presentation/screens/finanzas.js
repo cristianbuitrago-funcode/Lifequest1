@@ -298,9 +298,13 @@
       };
       const r = editingBillId ? await LQ.Finance.updateBill(editingBillId, input) : await LQ.Finance.addBill(input);
       if (!r.ok){ ui.showToast(r.error); return; }
-      ui.showToast(editingBillId ? 'Pago actualizado' : 'Pago añadido');
+      const rb = state.settings.reminders.bills || {};
+      const remind = LQ.native.notifications.available && rb.enabled !== false;
+      ui.showToast((editingBillId ? 'Pago actualizado' : 'Pago añadido') +
+        (remind ? ' · te avisaremos ' + (rb.daysBefore || 3) + ' días antes y el día del pago' : ''));
       billFormOpen = false; editingBillId = null;
       render();
+      if (remind && await LQ.native.notifications.hasPermission(true) && ui.syncReminders) ui.syncReminders();
     };
   }
 

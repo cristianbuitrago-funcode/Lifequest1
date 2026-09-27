@@ -431,6 +431,46 @@ label{ font-size:12px;font-weight:800;color:var(--muted);display:block;margin-bo
 .account-info b{ font-size:14px; }
 .account-info span{ font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 
+/* Tutorial guiado */
+.tour{ position:fixed;inset:0;z-index:95;opacity:0;transition:opacity .2s ease; }
+.tour.show{ opacity:1; }
+.tour-spot{
+  position:fixed;border-radius:16px;pointer-events:none;
+  box-shadow:0 0 0 9999px rgba(3,8,18,.74),0 0 0 2px var(--accent),0 0 26px 2px color-mix(in srgb,var(--accent) 45%,transparent);
+  transition:left .3s ease,top .3s ease,width .3s ease,height .3s ease;
+}
+.tour-spot.empty{ box-shadow:0 0 0 9999px rgba(3,8,18,.74); }
+.tour-card{
+  position:fixed;left:16px;right:16px;max-width:380px;margin:0 auto;padding:16px 16px 14px;
+  border-radius:18px;background:var(--panel);color:var(--text);
+  border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));
+  box-shadow:0 24px 60px -20px rgba(0,0,0,.8);transition:top .3s ease;
+}
+.tour-card h3{ font-size:17px;margin:6px 0 6px; }
+.tour-card p{ margin:0;font-size:14px;line-height:1.45;color:var(--muted); }
+.tour-dots{ display:flex;gap:5px; }
+.tour-dots span{ width:6px;height:6px;border-radius:50%;background:var(--line); }
+.tour-dots span.on{ width:18px;border-radius:99px;background:var(--accent); }
+.tour-actions{ display:flex;gap:8px;justify-content:flex-end;margin-top:14px; }
+.tour-actions [data-skip]{ margin-right:auto; }
+@media (min-width:761px){ .tour-card{ left:auto;right:130px;margin:0; } }
+
+/* Rueda de hábitos */
+.wheel-summary{ display:flex;gap:8px;flex-wrap:wrap;margin-top:8px; }
+.wheel-summary .money-chip b{ overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+
+/* Recordatorios: alarmas extra, pagos y herramientas */
+.extra-head{ padding:14px 2px 4px;font-size:14px;font-weight:800; }
+.extra-head small{ display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:2px; }
+.extra-row{ gap:8px; }
+.extra-row .toggle{ flex:1; }
+.extra-row .icon-btn{ flex-shrink:0; }
+.bill-reminder select{ width:auto;flex-shrink:0;padding:8px 10px; }
+.toggle-text{ font-size:14px;font-weight:800;color:var(--text); }
+.toggle-text small{ display:block;font-size:12px;font-weight:500;color:var(--muted);margin-top:2px; }
+#extraReminders .btn{ margin:8px 0 4px; }
+.reminder-tools{ margin-top:6px;padding-top:4px;border-top:1px dashed var(--line); }
+
 /* Finanzas ampliadas */
 body.has-bg{ background-attachment:fixed;background-repeat:no-repeat; }
 .hint{ font-size:12px;color:var(--muted);margin-top:6px; }

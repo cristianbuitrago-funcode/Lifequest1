@@ -1,6 +1,6 @@
 {
   "appId": "com.cristianbuitrago.lifequest",
-  "appName": "LifeQuest",
+  "appName": "LifeCoinQuest",
   "webDir": "www",
   "android": {
     "backgroundColor": "#030915"

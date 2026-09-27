@@ -111,7 +111,7 @@
         return;
       }
       if (location.protocol === 'file:'){
-        throw new Error('Para iniciar sesión en la web abre LifeQuest desde un servidor (npm start) o usa la app Android.');
+        throw new Error('Para iniciar sesión en la web abre LifeCoinQuest desde un servidor (npm start) o usa la app Android.');
       }
       await this.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     },

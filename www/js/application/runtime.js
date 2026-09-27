@@ -13,7 +13,7 @@
     } catch (error) {
       started = false;
       console.error("LifeQuest: error al iniciar", error);
-      if (LQ.ui && LQ.ui.showToast) LQ.ui.showToast("Error al iniciar LifeQuest");
+      if (LQ.ui && LQ.ui.showToast) LQ.ui.showToast("Error al iniciar LifeCoinQuest");
       throw error;
     }
   }

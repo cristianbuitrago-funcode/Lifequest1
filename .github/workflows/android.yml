@@ -56,7 +56,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: LifeQuest-debug-apk
+          name: LifeCoinQuest-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
       # ---------------------------------------------------------------------
@@ -71,20 +71,20 @@ jobs:
         run: |
           VERSION=$(grep -oP 'versionName "\K[^"]+' android/app/build.gradle)
           TAG="v$VERSION"
-          APK="LifeQuest-$VERSION.apk"
+          APK="LifeCoinQuest-$VERSION.apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk "$APK"
-          # Copia con nombre fijo: el enlace .../releases/latest/download/LifeQuest.apk
+          # Copia con nombre fijo: el enlace .../releases/latest/download/LifeCoinQuest.apk
           # siempre descarga la última versión.
-          cp "$APK" LifeQuest.apk
-          NOTES="Descarga **LifeQuest.apk** abajo, en *Assets*, y ábrelo en el teléfono para instalarlo (se instala encima de la versión anterior y conserva tus datos).
+          cp "$APK" LifeCoinQuest.apk
+          NOTES="Descarga **LifeCoinQuest.apk** abajo, en *Assets*, y ábrelo en el teléfono para instalarlo (se instala encima de la versión anterior y conserva tus datos).
 
           Versión $VERSION · compilada desde el commit ${GITHUB_SHA::7}."
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --notes "$NOTES" --latest
           else
-            gh release create "$TAG" --title "LifeQuest $VERSION" --notes "$NOTES" --target "$GITHUB_SHA" --latest
+            gh release create "$TAG" --title "LifeCoinQuest $VERSION" --notes "$NOTES" --target "$GITHUB_SHA" --latest
           fi
-          gh release upload "$TAG" "$APK" LifeQuest.apk --clobber
+          gh release upload "$TAG" "$APK" LifeCoinQuest.apk --clobber
 
       - name: Aviso si no se publicó
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && env.LIFEQUEST_DEBUG_KEYSTORE == ''

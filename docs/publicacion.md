@@ -1,11 +1,11 @@
-# Proteger y publicar LifeQuest
+# Proteger y publicar LifeCoinQuest
 
 Lista de pasos para (1) proteger el nombre y el logo, (2) publicar en Google
 Play y (3) proteger el código. Es una guía práctica, **no asesoría legal**:
 confirma los requisitos vigentes en las páginas oficiales y, si vas a invertir
 o vender, consulta con un abogado de propiedad intelectual.
 
-## 1. Marca "LifeQuest" en la Superintendencia de Industria y Comercio (SIC)
+## 1. Marca "LifeCoinQuest" en la Superintendencia de Industria y Comercio (SIC)
 
 La marca protege el **nombre y el logo** (el derecho de autor no protege nombres).
 
@@ -15,7 +15,7 @@ La marca protege el **nombre y el logo** (el derecho de autor no protege nombres
    - **Clase 9**: software / aplicaciones descargables.
    - **Clase 42**: software como servicio, diseño y desarrollo de software (si
      ofreces servicios en línea).
-3. **Tipo de marca**: mixta (nombre + logo) o una nominativa ("LifeQuest") y
+3. **Tipo de marca**: mixta (nombre + logo) o una nominativa ("LifeCoinQuest") y
    otra figurativa (logo). Usa `assets/logo-original.jpg`.
 4. Presenta la solicitud en línea en sic.gov.co y paga la tasa vigente (hay
    tarifas reducidas para personas naturales y pymes).

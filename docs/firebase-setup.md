@@ -1,4 +1,4 @@
-# Configurar la nube (Firebase) para LifeQuest
+# Configurar la nube (Firebase) para LifeCoinQuest
 
 Unos 10 minutos. Al final tendrás dos cosas que darle al proyecto:
 el **`firebaseConfig`** (app web) y el archivo **`google-services.json`** (app Android).
@@ -30,7 +30,7 @@ El plan gratuito de Firebase (Spark) sobra para uso personal.
 
 1. **Configuración del proyecto** (engranaje junto a *Descripción general*) →
    sección **Tus apps** → icono **`</>`** (Web).
-2. Apodo: `LifeQuest web`. No marques Firebase Hosting → **Registrar app**.
+2. Apodo: `LifeCoinQuest web`. No marques Firebase Hosting → **Registrar app**.
 3. Copia el objeto `firebaseConfig` que aparece
    (`apiKey`, `authDomain`, `projectId`, …).
 
@@ -44,7 +44,7 @@ El plan gratuito de Firebase (Spark) sobra para uso personal.
    24:E4:B7:A3:B8:02:C3:E7:BE:2E:F8:3F:79:25:4E:69:5C:7C:77:39
    ```
 
-   Es la huella de la clave con la que se firman los APK de LifeQuest (no es
+   Es la huella de la clave con la que se firman los APK de LifeCoinQuest (no es
    secreta). Si algún día firmas con otra clave, añade también su SHA-1 en
    **Configuración del proyecto → Tus apps → Android → Agregar huella digital**
    y vuelve a descargar el `google-services.json`.

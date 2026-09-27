@@ -48,8 +48,7 @@
     if (!LQ.native.notifications.available) return Promise.resolve();
     reminderQueue = reminderQueue.then(async () => {
       try {
-        const settings = LQ.state.settings.reminders;
-        const wanted = settings.morning.enabled || settings.evening.enabled;
+        const wanted = LQ.Reminders.wanted(LQ.state);
         const allowed = wanted && await LQ.native.notifications.hasPermission(false);
         await LQ.native.notifications.replaceAll(allowed ? LQ.Reminders.plan(LQ.state) : []);
       } catch (error) {
@@ -131,11 +130,19 @@
       }
     });
 
-    LQ.native.notifications.onOpen(() => LQ.app.router.activate("misiones"));
+    LQ.native.notifications.onOpen(extra => {
+      if (extra && extra.kind === "bill") {
+        LQ.app.router.activate("finanzas");
+        if (LQ.ui.views.finanzas.showSection) LQ.ui.views.finanzas.showSection("pagos");
+      } else if (extra && extra.kind !== "test") {
+        LQ.app.router.activate("misiones");
+      }
+    });
     LQ.ui.syncReminders = syncReminders;
     scheduleReminders();
 
     rolloverTimer = setInterval(checkDay, 60000);
+    setTimeout(() => { if (LQ.ui.tour) LQ.ui.tour.maybeStart(); }, 500);
     return { stop };
   }
 

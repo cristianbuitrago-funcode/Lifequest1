@@ -45,7 +45,7 @@
         path: filename, data: text, directory: 'CACHE', encoding: 'utf8'
       });
       try{
-        await plugin('Share').share({ title: filename, files: [uri], dialogTitle: 'Guardar copia de LifeQuest' });
+        await plugin('Share').share({ title: filename, files: [uri], dialogTitle: 'Guardar copia de LifeCoinQuest' });
       }catch(e){
         // Cerrar el menú de compartir sin elegir destino no es un error.
         if (!/cancel/i.test(String(e && e.message))) throw e;
@@ -73,17 +73,38 @@
   // -------------------------------------------------------------------------
   // Notificaciones locales (@capacitor/local-notifications)
   // -------------------------------------------------------------------------
-  const CHANNEL_ID = 'recordatorios';
+  // Canal nuevo con importancia alta: suena y aparece arriba aunque la app esté
+  // cerrada. (Un canal existente no se puede cambiar; por eso tiene otro id.)
+  const CHANNEL_ID = 'recordatorios-alertas';
   let channelReady = null;
 
   function ensureChannel(){
     if (!channelReady){
       channelReady = plugin('LocalNotifications').createChannel({
-        id: CHANNEL_ID, name: 'Recordatorios', description: 'Recordatorios diarios de misiones y hábitos',
-        importance: 4, visibility: 1, vibration: true
+        id: CHANNEL_ID, name: 'Recordatorios', description: 'Misiones, hábitos y pagos',
+        importance: 5, visibility: 1, vibration: true, lights: true, lightColor: '#D4AF37'
       }).catch(e => { channelReady = null; console.warn('createChannel', e); });
     }
     return channelReady;
+  }
+
+  function toNative(n, exact){
+    return {
+      id: n.id,
+      title: n.title,
+      body: n.body,
+      largeBody: n.body,
+      channelId: CHANNEL_ID,
+      smallIcon: 'ic_stat_lifequest',
+      iconColor: '#D4AF37',
+      autoCancel: true,
+      // Con el permiso de "Alarmas y recordatorios" la alarma es exacta y suena
+      // aunque la app esté cerrada y el teléfono en reposo. Sin él, Android la
+      // trata como inexacta (puede retrasarla); nunca se abre el permiso solo.
+      schedule: { at: n.at, allowWhileIdle: true },
+      isExactNotification: exact,
+      extra: Object.assign({ kind: n.kind, date: n.date }, n.billId ? { billId: n.billId } : {})
+    };
   }
 
   native.notifications = {
@@ -98,6 +119,24 @@
       return display === 'granted';
     },
 
+    /** true si Android permite alarmas exactas ("Alarmas y recordatorios"). */
+    async exactAllowed(){
+      if (!isNative) return false;
+      try{
+        const r = await plugin('LocalNotifications').checkExactNotificationSetting();
+        return r && r.exact_alarm === 'granted';
+      }catch(e){ return false; }
+    },
+
+    /** Abre el ajuste de Android "Alarmas y recordatorios"; devuelve si quedó activado. */
+    async requestExact(){
+      if (!isNative) return false;
+      try{
+        const r = await plugin('LocalNotifications').changeExactNotificationSetting();
+        return r && r.exact_alarm === 'granted';
+      }catch(e){ console.warn('changeExactNotificationSetting', e); return false; }
+    },
+
     /** Sustituye todos los recordatorios programados por los de `list`. */
     async replaceAll(list){
       if (!isNative) return;
@@ -108,22 +147,22 @@
       if (ours.length) await LN.cancel({ notifications: ours });
       if (!list.length) return;
       await ensureChannel();
-      await LN.schedule({
-        notifications: list.map(n => ({
-          id: n.id,
-          title: n.title,
-          body: n.body,
-          channelId: CHANNEL_ID,
-          smallIcon: 'ic_stat_lifequest',
-          iconColor: '#6d4aff',
-          autoCancel: true,
-          // Alarma inexacta que sí suena con el teléfono en reposo; evita pedir
-          // el permiso especial de "alarmas exactas" (puede llegar unos minutos tarde).
-          schedule: { at: n.at, allowWhileIdle: true },
-          isExactNotification: false,
-          extra: { kind: n.kind, date: n.date }
-        }))
-      });
+      const exact = await native.notifications.exactAllowed();
+      await LN.schedule({ notifications: list.map(n => toNative(n, exact)) });
+    },
+
+    /** Programa una notificación de prueba dentro de `seconds` segundos. */
+    async test(seconds){
+      if (!isNative) return false;
+      await ensureChannel();
+      const exact = await native.notifications.exactAllowed();
+      await plugin('LocalNotifications').schedule({ notifications: [toNative({
+        id: 999, kind: 'test', date: '',
+        at: new Date(Date.now() + (seconds || 60) * 1000),
+        title: '🔔 Prueba de LifeCoinQuest',
+        body: 'Si ves y oyes esto con la app cerrada, tus recordatorios funcionan.'
+      }, exact)] });
+      return exact;
     },
 
     /** Llama a fn(extra) cuando el usuario toca un recordatorio. */

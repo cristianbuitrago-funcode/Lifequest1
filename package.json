@@ -2,7 +2,7 @@
   "name": "lifequest",
   "version": "1.0.0",
   "private": true,
-  "description": "LifeQuest: convierte tus tareas diarias en un RPG. App web sin build, empaquetada como app Android con Capacitor.",
+  "description": "LifeCoinQuest: convierte tus tareas diarias en un RPG. App web sin build, empaquetada como app Android con Capacitor.",
   "scripts": {
     "start": "python3 -m http.server 8080 --directory www",
     "test": "node --test tests/*.test.js",

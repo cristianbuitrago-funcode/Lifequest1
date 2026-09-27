@@ -37,12 +37,15 @@
           <div class="field"><label for="stPunish">Monedas perdidas por misión diaria incumplida</label><input type="number" id="stPunish" value="${s.punishmentCoins}"></div>
         </div>
       </div>
-      <div class="panel">
+      <div class="panel" id="remindersPanel">
         <h2>Recordatorios</h2>
         ${LQ.native.notifications.available ? `
-        <div class="sub">Notificaciones diarias en tu teléfono. Se guardan al instante.</div>
+        <div class="sub">Notificaciones en tu teléfono. Se guardan al instante.</div>
         ${reminderRow('morning', 'Resumen de la mañana', 'Misiones diarias y hábitos del día')}
         ${reminderRow('evening', 'Aviso de pendientes', 'Solo si te falta algo; avisa si tu racha está en riesgo')}
+        <div id="extraReminders"></div>
+        ${billReminderRow()}
+        <div class="reminder-tools" id="reminderTools"></div>
         ` : `
         <div class="sub">Los recordatorios con notificaciones están disponibles en la app de Android.</div>
         `}
@@ -61,9 +64,10 @@
       <div class="panel about-panel">
         <div class="about-head">
           <img src="img/logo-192.png" alt="" width="52" height="52">
-          <div><h2>LifeQuest</h2><div class="sub" style="margin:0">Versión ${escapeHtml(LQ.config.APP_VERSION)}</div></div>
+          <div><h2>LifeCoinQuest</h2><div class="sub" style="margin:0">Versión ${escapeHtml(LQ.config.APP_VERSION)}</div></div>
         </div>
         <p class="about-copy">© 2026 ${escapeHtml(LQ.config.APP_OWNER)}. Todos los derechos reservados.</p>
+        <button class="btn ghost small" id="tourBtn" style="margin-bottom:10px">▶ Ver el tutorial</button>
         <div class="about-links">
           <a href="legal/terminos.html">Términos de uso</a>
           <a href="legal/privacidad.html">Política de privacidad</a>
@@ -99,10 +103,16 @@
       if (ok) ui.showToast('Ajustes guardados');
       ui.renderAll();
     };
-    el.querySelectorAll('.reminder-row').forEach(row => {
+    el.querySelectorAll('.reminder-row[data-kind]').forEach(row => {
       row.querySelector('input[type=checkbox]').onchange = () => onReminderChange(row);
       row.querySelector('input[type=time]').onchange = () => onReminderChange(row);
     });
+    if (LQ.native.notifications.available){
+      renderExtraReminders();
+      bindBillReminders();
+      renderReminderTools();
+    }
+    document.getElementById('tourBtn').onclick = () => ui.tour.start();
     document.getElementById('exportBtn').onclick = exportBackup;
     document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
     document.getElementById('importFile').onchange = (e) => importBackup(e.target);
@@ -179,7 +189,7 @@
     };
     const del = document.getElementById('deleteAccountBtn');
     if (del) del.onclick = async () => {
-      const ok = confirm('Se eliminarán tu cuenta de LifeQuest y TODOS tus datos guardados en la nube. ' +
+      const ok = confirm('Se eliminarán tu cuenta de LifeCoinQuest y TODOS tus datos guardados en la nube. ' +
         'Los datos de este dispositivo se conservan. Esta acción no se puede deshacer. ¿Continuar?');
       if (!ok) return;
       const word = prompt('Para confirmar, escribe ELIMINAR');
@@ -230,7 +240,7 @@
     const turningOn = box.checked && !r.enabled;
     if (turningOn && !(await LQ.native.notifications.hasPermission(true))){
       box.checked = false;
-      ui.showToast('Permite las notificaciones de LifeQuest en los ajustes de Android');
+      ui.showToast('Permite las notificaciones de LifeCoinQuest en los ajustes de Android');
       return;
     }
     r.enabled = box.checked;
@@ -240,6 +250,126 @@
     await ui.syncReminders();
     if (r.enabled) ui.showToast('Recordatorio programado a las ' + r.time);
     else ui.showToast('Recordatorio desactivado');
+  }
+
+  // -------------------------------------------------------------------------
+  // Alarmas extra, pagos y herramientas de recordatorios
+  // -------------------------------------------------------------------------
+  const MAX_EXTRA = LQ.Reminders.MAX_EXTRA;
+
+  async function saveReminders(message){
+    await store.saveSettings();
+    await ui.syncReminders();
+    if (message) ui.showToast(message);
+  }
+
+  async function ensurePermission(){
+    if (await LQ.native.notifications.hasPermission(true)) return true;
+    ui.showToast('Permite las notificaciones de LifeCoinQuest en los ajustes de Android');
+    return false;
+  }
+
+  function renderExtraReminders(){
+    const box = document.getElementById('extraReminders');
+    if (!box) return;
+    const list = state.settings.reminders.extra;
+    box.innerHTML = `
+      <div class="extra-head">
+        <span>Alarmas extra<small>Por si lo dejas para "más tarde": te vuelve a avisar de lo pendiente</small></span>
+      </div>
+      ${list.map(x => `
+        <div class="reminder-row extra-row" data-extra="${escapeHtml(x.id)}">
+          <label class="toggle"><input type="checkbox" ${x.enabled ? 'checked' : ''}><span>Alarma</span></label>
+          <input type="time" value="${escapeHtml(x.time)}" aria-label="Hora de la alarma extra">
+          <button class="icon-btn" data-remove aria-label="Quitar alarma">${ui.svgTrash()}</button>
+        </div>`).join('')}
+      ${list.length < MAX_EXTRA ? '<button class="btn ghost small" id="addExtraBtn">+ Añadir alarma</button>' : '<div class="hint">Máximo ' + MAX_EXTRA + ' alarmas extra.</div>'}`;
+    box.querySelectorAll('.extra-row').forEach(row => {
+      const item = list.find(x => x.id === row.dataset.extra);
+      row.querySelector('input[type=checkbox]').onchange = async (e) => {
+        if (e.target.checked && !(await ensurePermission())){ e.target.checked = false; return; }
+        item.enabled = e.target.checked;
+        await saveReminders(item.enabled ? 'Alarma a las ' + item.time : 'Alarma desactivada');
+      };
+      row.querySelector('input[type=time]').onchange = async (e) => {
+        if (!e.target.value) return;
+        item.time = e.target.value;
+        await saveReminders('Alarma a las ' + item.time);
+      };
+      row.querySelector('[data-remove]').onclick = async () => {
+        state.settings.reminders.extra = list.filter(x => x !== item);
+        await saveReminders('Alarma eliminada');
+        renderExtraReminders();
+      };
+    });
+    const add = document.getElementById('addExtraBtn');
+    if (add) add.onclick = async () => {
+      if (!(await ensurePermission())) return;
+      const last = list.length ? list[list.length - 1].time : '17:00';
+      const [h, m] = LQ.Reminders.parseTime(last, '17:00');
+      const time = String(Math.min(23, h + 1)).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+      list.push({ id: 'x' + uid(), time, enabled: true });
+      await saveReminders('Alarma extra a las ' + time + ' (puedes cambiar la hora)');
+      renderExtraReminders();
+    };
+  }
+
+  function billReminderRow(){
+    const b = state.settings.reminders.bills;
+    return `
+      <div class="reminder-row bill-reminder">
+        <label class="toggle">
+          <input type="checkbox" id="billRemOn" ${b.enabled !== false ? 'checked' : ''}>
+          <span>Pagos<small>Aviso días antes y 3 veces el día del pago (${escapeHtml(b.dueTimes.join(', '))})</small></span>
+        </label>
+        <select id="billRemDays" aria-label="Días de anticipación" ${b.enabled !== false ? '' : 'disabled'}>
+          ${[1, 2, 3, 5, 7].map(n => `<option value="${n}" ${n === b.daysBefore ? 'selected' : ''}>${n} ${n === 1 ? 'día' : 'días'} antes</option>`).join('')}
+        </select>
+      </div>`;
+  }
+
+  function bindBillReminders(){
+    const b = state.settings.reminders.bills;
+    const on = document.getElementById('billRemOn'), days = document.getElementById('billRemDays');
+    on.onchange = async () => {
+      if (on.checked && !(await ensurePermission())){ on.checked = false; return; }
+      b.enabled = on.checked;
+      days.disabled = !b.enabled;
+      await saveReminders(b.enabled ? 'Te avisaremos de tus pagos' : 'Avisos de pagos desactivados');
+    };
+    days.onchange = async () => {
+      b.daysBefore = parseInt(days.value, 10) || 3;
+      await saveReminders('Aviso ' + b.daysBefore + (b.daysBefore === 1 ? ' día' : ' días') + ' antes de cada pago');
+    };
+  }
+
+  async function renderReminderTools(){
+    const box = document.getElementById('reminderTools');
+    if (!box) return;
+    const exact = await LQ.native.notifications.exactAllowed();
+    box.innerHTML = `
+      <div class="reminder-row">
+        <span class="toggle-text">Alarmas puntuales
+          <small>${exact ? '✓ Activadas: suenan a su hora aunque la app esté cerrada.' : 'Desactivadas: Android puede retrasar o silenciar los avisos con la app cerrada.'}</small>
+        </span>
+        ${exact ? '' : '<button class="btn small" id="exactBtn">Activar</button>'}
+      </div>
+      <div class="backup-actions" style="margin-top:10px">
+        <button class="btn ghost small" id="testNotifBtn">🔔 Probar en 1 minuto</button>
+      </div>
+      <div class="hint">¿No suenan con la app cerrada? En Android abre Ajustes → Apps → LifeCoinQuest → Batería y elige <b>Sin restricciones</b>. En Xiaomi, activa también el <b>Inicio automático</b>.</div>`;
+    const exactBtn = document.getElementById('exactBtn');
+    if (exactBtn) exactBtn.onclick = async () => {
+      const ok = await LQ.native.notifications.requestExact();
+      await ui.syncReminders();
+      ui.showToast(ok ? 'Alarmas puntuales activadas' : 'Activa "Alarmas y recordatorios" para LifeCoinQuest');
+      renderReminderTools();
+    };
+    document.getElementById('testNotifBtn').onclick = async () => {
+      if (!(await ensurePermission())) return;
+      await LQ.native.notifications.test(60);
+      ui.showToast('Cierra la app: en 1 minuto llegará una notificación de prueba');
+    };
   }
 
   function renderCatList(){
@@ -273,7 +403,7 @@
     try{
       const data = await store.exportData();
       const json = JSON.stringify(data, null, 2);
-      const filename = 'lifequest-' + todayStr() + '.json';
+      const filename = 'lifecoinquest-' + todayStr() + '.json';
       if (LQ.native.isNative){
         // En Android no hay descargas: se guarda el archivo y se abre "Compartir"
         // (Drive, correo, Archivos…).

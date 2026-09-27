@@ -7,7 +7,7 @@
         <header class="topbar" data-region="header">
           <div class="brand">
             <img class="brand-logo" src="img/logo-192.png" alt="" width="40" height="40">
-            <h1>LifeQuest</h1>
+            <h1>LifeCoinQuest</h1>
           </div>
           <button class="theme-btn" id="themeBtn" type="button" aria-label="Cambiar tema">
             <svg id="themeIcon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="2"/></svg>
