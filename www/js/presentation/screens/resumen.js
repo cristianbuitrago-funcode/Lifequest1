@@ -41,59 +41,9 @@
         <div id="recentList"></div>
       </div>
     `;
-    drawRadar(cats, totals, max);
+    ui.drawRadar(document.getElementById('radarCanvas'), cats.map(c => c.name), totals.map(t => t / max));
     renderHistoryGrid();
     renderRecentList();
-  }
-
-  function drawRadar(cats, totals, max){
-    const canvas = document.getElementById('radarCanvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const cx = canvas.width/2, cy = canvas.height/2 + 6, R = 108;
-    const n = cats.length;
-    const styles = getComputedStyle(document.documentElement);
-    const lineColor = styles.getPropertyValue('--line').trim();
-    const muted = styles.getPropertyValue('--muted').trim();
-    const accent = styles.getPropertyValue('--accent').trim();
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    if (!n) return;
-
-    // rings
-    for (let ring=1; ring<=4; ring++){
-      ctx.beginPath();
-      for (let i=0;i<=n;i++){
-        const a = (Math.PI*2*i/n) - Math.PI/2;
-        const r = R*ring/4;
-        const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
-        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-      }
-      ctx.strokeStyle = lineColor; ctx.lineWidth = 1; ctx.stroke();
-    }
-    // axes + labels
-    ctx.fillStyle = muted; ctx.font = '11px Manrope, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    for (let i=0;i<n;i++){
-      const a = (Math.PI*2*i/n) - Math.PI/2;
-      const x = cx + Math.cos(a)*R, y = cy + Math.sin(a)*R;
-      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.strokeStyle=lineColor; ctx.stroke();
-      const lx = cx + Math.cos(a)*(R+22), ly = cy + Math.sin(a)*(R+22);
-      ctx.fillText(cats[i].name, lx, ly);
-    }
-    // data polygon
-    ctx.beginPath();
-    for (let i=0;i<=n;i++){
-      const idx = i % n;
-      const a = (Math.PI*2*idx/n) - Math.PI/2;
-      const v = totals[idx]/max;
-      const r = R*Math.max(0.04, v);
-      const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
-      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
-    }
-    ctx.closePath();
-    ctx.fillStyle = accent + '33';
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 2;
-    ctx.fill(); ctx.stroke();
   }
 
   function renderHistoryGrid(){

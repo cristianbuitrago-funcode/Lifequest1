@@ -5,7 +5,7 @@
 (function (LQ) {
   "use strict";
 
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.4.0';
   const APP_OWNER = 'Cristian Camilo Buitrago Espinosa';
 
   const DEFAULT_CATEGORIES = [
@@ -31,8 +31,14 @@
     // Recordatorios diarios (notificaciones locales en la app Android)
     reminders: {
       morning: {enabled:false, time:'08:00'},
-      evening: {enabled:false, time:'20:00'}
+      evening: {enabled:false, time:'20:00'},
+      // Horas adicionales ("por si lo dejo para después"): [{id, time, enabled}]
+      extra: [],
+      // Pagos: aviso unos días antes y varias veces el día del vencimiento
+      bills: {enabled:true, daysBefore:3, beforeTime:'09:00', dueTimes:['08:00','13:00','19:00']}
     },
+    // Tutorial guiado de la primera vez
+    tutorialDone: false,
     // Recompensa por registrar un pago (a tiempo / con retraso)
     billRewards: {
       onTime: {xp:15, coins:5},
@@ -120,10 +126,12 @@
       if (Array.isArray(s.distribution.buckets) && s.distribution.buckets.length) out.distribution.buckets = s.distribution.buckets;
     }
     if (s.reminders){
-      ['morning','evening'].forEach(k => {
+      ['morning','evening','bills'].forEach(k => {
         if (s.reminders[k]) out.reminders[k] = Object.assign(out.reminders[k], s.reminders[k]);
       });
+      if (Array.isArray(s.reminders.extra)) out.reminders.extra = s.reminders.extra.filter(x => x && x.time);
     }
+    if (typeof s.tutorialDone === 'boolean') out.tutorialDone = s.tutorialDone;
     return out;
   }
 

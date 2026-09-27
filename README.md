@@ -1,6 +1,6 @@
-# LifeQuest
+# LifeCoinQuest
 
-### [⬇️ Descargar la app para Android (APK)](https://github.com/cristianbuitrago-funcode/Lifequest1/releases/latest/download/LifeQuest.apk)
+### [⬇️ Descargar la app para Android (APK)](https://github.com/cristianbuitrago-funcode/Lifequest1/releases/latest/download/LifeCoinQuest.apk)
 
 Ábrelo en el teléfono para instalarlo; se instala encima de la versión anterior y conserva tus datos.
 
@@ -17,7 +17,13 @@ dispositivo (IndexedDB) y se conservan entre sesiones.
 ## Qué incluye
 
 - **Misiones** diarias y únicas con XP, monedas y castigo por incumplimiento.
-- **Hábitos** con racha y escalera de recompensas.
+- **Hábitos** con racha, escalera de recompensas y una **rueda de constancia**
+  (porcentaje de días cumplidos de cada hábito en los últimos 30 días).
+- **Recordatorios** (app Android): resumen de la mañana, aviso de pendientes,
+  **alarmas extra** a la hora que elijas y **avisos de pagos** (días antes y tres
+  veces el día del vencimiento). Con "Alarmas puntuales" suenan a su hora aunque
+  la app esté cerrada.
+- **Tutorial guiado** la primera vez (se repite desde Ajustes).
 - **Finanzas**
   - *Resumen*: ingresos, gastos, saldo, calendario y movimientos.
   - *Pagos*: obligaciones (único, diario, semanal, quincenal, mensual o cada N
@@ -63,10 +69,10 @@ hasta la próxima vez que la abras.
 
 1. Descarga el APK:
    - desde **Releases**, en la página principal del repositorio: cada
-     actualización de `main` publica ahí `LifeQuest.apk` (requiere el
+     actualización de `main` publica ahí `LifeCoinQuest.apk` (requiere el
      secreto de la clave de firma, paso 7 de docs/firebase-setup.md), o
    - desde **GitHub → Actions → "APK Android" → la última ejecución →
-     Artifacts → `LifeQuest-debug-apk`** (se compila en cada push), o
+     Artifacts → `LifeCoinQuest-debug-apk`** (se compila en cada push), o
    - compílalo tú mismo (ver abajo).
 2. Pásalo al teléfono y ábrelo. Android pedirá permitir "instalar apps de
    origen desconocido" para la app con la que lo abras (Archivos, Chrome…).

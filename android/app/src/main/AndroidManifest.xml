@@ -32,7 +32,8 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Los recordatorios usan alarmas inexactas: no hace falta este permiso especial
-         (lo declara @capacitor/local-notifications y Google Play lo restringe). -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />
+    <!-- Alarmas exactas para que los recordatorios suenen a su hora aunque la app
+         esté cerrada. El usuario lo activa en Ajustes → "Alarmas puntuales"
+         (Android → Alarmas y recordatorios); sin él se usan alarmas inexactas. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 </manifest>
