@@ -1,10 +1,103 @@
 rules_version = '2';
 
-// Cada cuenta solo puede leer y escribir su propia rama users/{uid}/...
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    // Campos que cambian en una actualización.
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    // ---------------------------------------------------------------------
+    // Datos privados: cada cuenta solo lee y escribe su propia rama.
+    // ---------------------------------------------------------------------
     match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if signedIn() && me() == uid;
+    }
+
+    // ---------------------------------------------------------------------
+    // Perfil público (ranking y clanes). Solo existe si el usuario lo activa.
+    // No incluye finanzas, misiones ni hábitos.
+    // ---------------------------------------------------------------------
+    function validProfile(d) {
+      return d.keys().hasOnly(['name', 'photo', 'level', 'totalXp', 'weeklyXp', 'weekKey', 'streak',
+                               'achievements', 'clanId', 'clanName', 'updatedAt'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 30
+        && (d.photo == null || (d.photo is string && d.photo.size() <= 60000 && d.photo.matches('data:image/.*')))
+        && d.level is int && d.level >= 1 && d.level <= 1000
+        && d.totalXp is int && d.totalXp >= 0
+        && d.weeklyXp is int && d.weeklyXp >= 0
+        && d.weekKey is string && d.weekKey.size() <= 10
+        && d.streak is int && d.streak >= 0
+        && d.achievements is int && d.achievements >= 0
+        && (d.clanId == null || d.clanId is string)
+        && (d.clanName == null || (d.clanName is string && d.clanName.size() <= 30));
+    }
+    match /publicProfiles/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && me() == uid && validProfile(request.resource.data);
+      allow delete: if signedIn() && me() == uid;
+    }
+
+    // ---------------------------------------------------------------------
+    // Clanes. Los abiertos se pueden listar; los privados solo se abren con su
+    // id, que se obtiene con el código de invitación (clanCodes).
+    // ---------------------------------------------------------------------
+    function validClanInfo(d) {
+      return d.name is string && d.name.size() >= 3 && d.name.size() <= 30
+        && d.emoji is string && d.emoji.size() <= 8
+        && d.description is string && d.description.size() <= 140
+        && d.open is bool;
+    }
+    function sameMembersPlusMe(before, after) {
+      return after.members.hasAll(before.members) && after.members.size() == before.members.size() + 1
+        && after.members.hasAll([me()]) && !before.members.hasAll([me()])
+        && after.members.size() <= 30 && after.memberCount == after.members.size();
+    }
+    function sameMembersMinusMe(before, after) {
+      return before.members.hasAll(after.members) && after.members.size() == before.members.size() - 1
+        && before.members.hasAll([me()]) && !after.members.hasAll([me()])
+        && after.memberCount == after.members.size();
+    }
+
+    match /clans/{clanId} {
+      allow get: if signedIn();
+      allow list: if signedIn() && resource.data.open == true;
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'emoji', 'description', 'open', 'code', 'ownerUid', 'members', 'memberCount', 'createdAt'])
+        && validClanInfo(request.resource.data)
+        && request.resource.data.ownerUid == me()
+        && request.resource.data.members == [me()]
+        && request.resource.data.memberCount == 1
+        && request.resource.data.code is string && request.resource.data.code.size() == 6;
+
+      allow update: if signedIn() && (
+        // El dueño edita nombre, emoji, descripción o si es abierto.
+        (resource.data.ownerUid == me()
+          && changed().hasOnly(['name', 'emoji', 'description', 'open'])
+          && validClanInfo(request.resource.data))
+        // Cualquiera se une (a los privados solo llega quien tiene el código).
+        || (changed().hasOnly(['members', 'memberCount'])
+          && sameMembersPlusMe(resource.data, request.resource.data))
+        // Un integrante sale; si era el dueño, la corona pasa a otro integrante.
+        || (changed().hasOnly(['members', 'memberCount', 'ownerUid'])
+          && sameMembersMinusMe(resource.data, request.resource.data)
+          && (request.resource.data.ownerUid == resource.data.ownerUid
+              || (resource.data.ownerUid == me() && request.resource.data.members.hasAll([request.resource.data.ownerUid]))))
+      );
+
+      // El último integrante que sale borra el clan.
+      allow delete: if signedIn() && resource.data.members == [me()];
+    }
+
+    match /clanCodes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['clanId'])
+        && getAfter(/databases/$(database)/documents/clans/$(request.resource.data.clanId)).data.ownerUid == me();
+      // Solo junto con el borrado del clan (último integrante que sale).
+      allow delete: if signedIn()
+        && !existsAfter(/databases/$(database)/documents/clans/$(resource.data.clanId));
     }
   }
 }

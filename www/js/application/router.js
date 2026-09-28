@@ -1,7 +1,7 @@
 (function (LQ) {
   "use strict";
 
-  const routes = ["resumen", "misiones", "habitos", "finanzas", "tienda", "ajustes"];
+  const routes = ["resumen", "misiones", "habitos", "finanzas", "tienda", "social", "ajustes"];
   let active = "resumen";
 
   function valid(name) { return routes.includes(name); }
@@ -12,6 +12,8 @@
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.tab === next);
     });
+    const gear = document.getElementById("settingsBtn");
+    if (gear) gear.classList.toggle("active", next === "ajustes");
     routes.forEach(route => {
       const view = document.getElementById(`view-${route}`);
       if (view) view.hidden = route !== next;
@@ -29,6 +31,13 @@
     tabs.addEventListener("click", event => {
       const button = event.target.closest("[data-tab]");
       if (button) activate(button.dataset.tab);
+    });
+    const gear = document.getElementById("settingsBtn");
+    if (gear) gear.addEventListener("click", () => activate(active === "ajustes" ? "resumen" : "ajustes"));
+    const avatar = document.getElementById("charAvatar");
+    if (avatar) avatar.addEventListener("click", () => {
+      activate("social");
+      if (LQ.ui.views.social && LQ.ui.views.social.showSection) LQ.ui.views.social.showSection("perfil");
     });
   }
 

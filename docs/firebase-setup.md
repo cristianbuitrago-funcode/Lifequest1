@@ -24,7 +24,17 @@ El plan gratuito de Firebase (Spark) sobra para uso personal.
 3. Elige **modo de producción** → **Crear**.
 4. Pestaña **Reglas**: borra lo que haya, pega el contenido de
    [`firestore.rules`](../firestore.rules) de este repositorio y pulsa **Publicar**.
-   Estas reglas hacen que cada cuenta solo pueda leer y escribir sus propios datos.
+   Estas reglas hacen que cada cuenta solo pueda leer y escribir sus propios datos,
+   y controlan el perfil público, el ranking y los clanes (nadie puede editar el
+   perfil de otro ni meter o sacar gente de un clan ajeno).
+5. Pestaña **Índices → Compuestos → Crear índice**, y crea estos dos (los usan
+   el ranking semanal y la lista de clanes abiertos):
+   - Colección `publicProfiles`: `weekKey` **Ascendente**, `weeklyXp` **Descendente**.
+   - Colección `clans`: `open` **Ascendente**, `memberCount` **Descendente**.
+
+   Si usas la CLI de Firebase, `firebase deploy --only firestore` publica las
+   reglas y los índices de [`firestore.indexes.json`](../firestore.indexes.json).
+   Mientras un índice se está creando, la app muestra "Falta configurar un índice".
 
 ## 4. Registrar la app web → `firebaseConfig`
 

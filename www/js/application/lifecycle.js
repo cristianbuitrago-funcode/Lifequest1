@@ -58,10 +58,51 @@
     return reminderQueue;
   }
 
+  // Logros: se revisan tras cada cambio y se celebran cuando no hay otra
+  // ventana abierta (ni el tutorial ni otra celebración).
+  let achTimer = null, publishTimer = null;
+  function scheduleAchievements() {
+    clearTimeout(achTimer);
+    achTimer = setTimeout(async () => {
+      try {
+        const list = await LQ.Achievements.claim();
+        if (list.length) celebrateAchievements(list);
+      } catch (error) {
+        console.error("LifeCoinQuest: logros", error);
+      }
+    }, 600);
+  }
+
+  function celebrateAchievements(list) {
+    const busy = (LQ.ui.tour && LQ.ui.tour.active) || document.querySelector(".celebrate.show, .modal.show");
+    if (busy) { setTimeout(() => celebrateAchievements(list), 1500); return; }
+    const coins = list.reduce((sum, a) => sum + a.reward, 0);
+    LQ.app.renderer.renderCharacter();
+    LQ.ui.celebrate({
+      icon: list.length === 1 ? list[0].icon : "🏆",
+      title: list.length === 1 ? "¡Logro desbloqueado!" : "¡" + list.length + " logros desbloqueados!",
+      message: list.map(a => a.name).join(" · "),
+      rewards: ["+" + coins + " 🪙"],
+      actions: [{ label: "Ver mis logros", primary: true, onClick: () => {
+        LQ.app.router.activate("social");
+        LQ.ui.views.social.showSection("logros");
+      } }]
+    });
+  }
+
+  // Perfil público (ranking y clanes): se actualiza unos segundos después de los cambios.
+  function schedulePublish() {
+    if (!LQ.cloud.user || !LQ.state.profile.social.public) return;
+    clearTimeout(publishTimer);
+    publishTimer = setTimeout(() => LQ.ui.views.social.publishNow(), 5000);
+  }
+
   function bindExternalChanges() {
     LQ.store.subscribe(change => {
       if (!LQ.sync.applying) scheduleCloud();
       scheduleReminders();
+      scheduleAchievements();
+      schedulePublish();
     });
 
     if (typeof BroadcastChannel !== "undefined") {
@@ -84,6 +125,8 @@
 
     LQ.cloud.onChange(() => {
       if (isVisible("ajustes")) LQ.ui.views.ajustes.renderAccount();
+      if (isVisible("social")) LQ.ui.views.social.render();
+      schedulePublish();
     });
 
     window.addEventListener("online", () => LQ.sync.syncNow().catch(() => undefined));
@@ -142,6 +185,7 @@
     scheduleReminders();
 
     rolloverTimer = setInterval(checkDay, 60000);
+    scheduleAchievements();
     setTimeout(() => { if (LQ.ui.tour) LQ.ui.tour.maybeStart(); }, 500);
     return { stop };
   }
@@ -150,6 +194,8 @@
     clearTimeout(reminderTimer);
     clearTimeout(cloudTimer);
     clearInterval(rolloverTimer);
+    clearTimeout(achTimer);
+    clearTimeout(publishTimer);
   }
 
   LQ.app = LQ.app || {};
