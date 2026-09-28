@@ -1,7 +1,7 @@
 (function (LQ) {
   "use strict";
 
-  const routes = ["resumen", "misiones", "habitos", "finanzas", "tienda", "social", "ajustes"];
+  const routes = ["resumen", "misiones", "habitos", "finanzas", "tienda", "social", "decidia", "ajustes"];
   let active = "resumen";
 
   function valid(name) { return routes.includes(name); }

@@ -23,9 +23,11 @@
   const COLLECTIONS = [
     'quests', 'completions', 'habits', 'finance',
     // v2: pagos, distribución del dinero, inventario y productos personalizados de la tienda
-    'bills', 'allocations', 'inventory', 'shopProducts'
+    'bills', 'allocations', 'inventory', 'shopProducts',
+    // v3: DECIDIA (decisiones y comparaciones)
+    'decisions'
   ];
-  const DB_VERSION = 2; // al subir de versión, onupgradeneeded crea solo los almacenes que faltan
+  const DB_VERSION = 3; // al subir de versión, onupgradeneeded crea solo los almacenes que faltan
 
   // -------------------------------------------------------------------------
   // IndexedDB — backend principal

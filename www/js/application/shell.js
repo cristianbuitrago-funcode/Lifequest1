@@ -50,6 +50,7 @@
           <button class="tab-btn" type="button" data-tab="finanzas">Finanzas</button>
           <button class="tab-btn" type="button" data-tab="tienda">🛒 Tienda</button>
           <button class="tab-btn" type="button" data-tab="social">👥 Social</button>
+          <button class="tab-btn" type="button" data-tab="decidia">🧠 Decidia</button>
         </nav>
 
         <main class="app-content" data-region="content">
@@ -59,6 +60,7 @@
           <section id="view-finanzas" data-view="finanzas" hidden></section>
           <section id="view-tienda" data-view="tienda" hidden></section>
           <section id="view-social" data-view="social" hidden></section>
+          <section id="view-decidia" data-view="decidia" hidden></section>
           <section id="view-ajustes" data-view="ajustes" hidden></section>
         </main>
       </div>

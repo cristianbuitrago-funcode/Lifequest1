@@ -929,3 +929,227 @@ body.has-bg{ background-attachment:fixed;background-repeat:no-repeat; }
   }
 }
 
+
+/* =========================================================================
+   DECIDIA — decisiones y escenarios (módulo independiente del juego)
+   Clases propias: .decidia-*, .decision-*, .scenario-*, .variable-*,
+   .comparison-*, .option-*, .future-*, .whatif-*, .wizard-*
+   ========================================================================= */
+.decidia{ --opt:var(--accent); }
+.decidia input[type=range]{ width:100%;accent-color:var(--accent);height:28px;cursor:pointer; }
+.decidia .num{ font-variant-numeric:tabular-nums; }
+.decidia label{ text-transform:none;letter-spacing:normal;margin-bottom:0; }
+.decidia .decidia-ask{ color:var(--text);font-size:17px;margin-bottom:8px; }
+
+.decidia-hero{
+  position:relative;overflow:hidden;margin-bottom:16px;padding:20px;border-radius:22px;
+  border:1px solid color-mix(in srgb,var(--accent) 38%,var(--line));
+  background:
+    radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent-2) 22%,transparent),transparent 60%),
+    linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--panel)),var(--panel));
+}
+.decidia-brand{ display:flex;align-items:center;gap:12px;margin-bottom:16px; }
+.decidia-brand h2{ margin:0;font-size:22px;letter-spacing:.06em; }
+.decidia-logo{ font-size:34px;animation:decidia-float 4s ease-in-out infinite; }
+.decidia-tag{ color:var(--muted);font-size:13px; }
+.decidia-ask{ display:block;font-weight:800;font-size:17px;margin-bottom:8px; }
+.decidia-hero textarea{ min-height:84px;resize:vertical; }
+.decidia-cta{ width:100%;margin-top:12px;min-height:46px;font-size:15px; }
+.decidia-alt{ display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px; }
+.decidia-pill{
+  min-height:44px;border-radius:14px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  font-weight:800;font-size:14px;cursor:pointer;transition:transform .15s ease,border-color .15s ease;
+}
+.decidia-pill:hover{ transform:translateY(-2px);border-color:var(--accent); }
+.decidia-privacy{ margin-top:12px;font-size:11.5px;color:var(--muted); }
+
+.decision-list{ display:grid;gap:8px; }
+.decision-item{
+  display:flex;align-items:center;gap:12px;width:100%;padding:12px;text-align:left;cursor:pointer;
+  border-radius:14px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+  transition:transform .15s ease,border-color .15s ease;
+}
+.decision-item:hover{ transform:translateX(3px);border-color:var(--accent); }
+.decision-emoji{ font-size:24px;flex:none; }
+.decision-main{ flex:1;min-width:0;display:grid;gap:2px; }
+.decision-main b{ overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.decision-main small{ color:var(--muted);font-size:11.5px; }
+.decision-go{ color:var(--muted);font-size:22px; }
+
+.decidia-bar{ display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px; }
+.decidia-back{ background:none;border:none;color:var(--accent);font-weight:800;font-size:14px;cursor:pointer;padding:8px 0; }
+.decidia-save-state{ font-size:12px;color:var(--muted); }
+.decision-head{ display:grid;gap:8px; }
+.decision-kicker{ font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent); }
+.decidia .decision-title{ font-size:18px;font-weight:800;background:transparent;border-color:transparent;padding-left:0; }
+.decidia .decision-title:focus{ border-color:var(--accent);padding-left:10px; }
+.decision-desc{ font-size:13px;resize:vertical; }
+
+/* Tarjetas de escenario (una por opción, sin ganador) */
+.scenario-grid{ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px;margin-bottom:12px; }
+.scenario-card{
+  position:relative;padding:16px;border-radius:18px;background:var(--panel);
+  border:1px solid color-mix(in srgb,var(--opt) 45%,var(--line));
+  box-shadow:inset 0 3px 0 var(--opt);
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+  animation:decidia-in .28s ease both;
+}
+.scenario-card.is-changed{ box-shadow:inset 0 3px 0 var(--opt),0 0 0 2px color-mix(in srgb,var(--opt) 50%,transparent); }
+.scenario-card header{ display:flex;align-items:center;gap:8px;margin-bottom:8px; }
+.scenario-card h3{ margin:0;font-size:16px; }
+.scenario-emoji{ font-size:22px; }
+.scenario-big-label{ font-size:11.5px;color:var(--muted);font-weight:700; }
+.scenario-big{ font-size:clamp(24px,7vw,30px);font-weight:900;line-height:1.1;transition:color .2s ease,transform .2s ease;overflow-wrap:anywhere; }
+.scenario-big.is-bumping{ transform:scale(1.04); }
+.scenario-card.is-negative .scenario-big{ color:var(--danger); }
+.scenario-delta{ font-size:12px;font-weight:800;color:var(--opt);margin-top:2px; }
+.scenario-facts{ display:grid;gap:4px;margin:12px 0 0;font-size:12.5px; }
+.scenario-facts div{ display:flex;justify-content:space-between;gap:10px; }
+.scenario-facts dt{ color:var(--muted);min-width:0; }
+.scenario-facts dd{ margin:0;font-weight:700;text-align:right; }
+.scenario-notes{ margin:10px 0 0;padding-left:18px;font-size:12px;color:var(--muted);display:grid;gap:3px; }
+
+.decidia-tools{ display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px; }
+.decidia-tool{
+  min-height:48px;border-radius:14px;border:1px solid var(--line);background:var(--panel);color:var(--text);
+  font-weight:900;font-size:13px;letter-spacing:.02em;cursor:pointer;transition:all .18s ease;
+}
+.decidia-tool.is-on{ background:var(--accent);border-color:var(--accent);color:var(--on-accent); }
+.decidia-whatif,.decidia-future{ animation:decidia-in .25s ease both; }
+.decidia-whatif h2,.decidia-future h2{ margin:0 0 4px; }
+.whatif-row{ padding:10px 0;border-bottom:1px solid var(--line);transition:background .2s ease; }
+.whatif-row.is-changed .whatif-vals b{ color:var(--accent); }
+.whatif-label{ display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;font-size:13px;font-weight:700; }
+.whatif-vals{ color:var(--muted);font-weight:600; }
+.whatif-saved{ display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;font-size:12px;color:var(--muted); }
+.whatif-chip{ display:inline-flex;align-items:center;gap:2px;padding:4px 6px 4px 10px; }
+.whatif-chip button{ background:none;border:none;color:inherit;font:inherit;cursor:pointer;padding:2px 4px; }
+
+/* Variables */
+.variable-row,.aspect-row,.comparison-edit{ padding:12px 0;border-top:1px solid var(--line); }
+.variable-row:first-child,.aspect-row:first-child,.comparison-edit:first-child{ border-top:none; }
+.variable-row.is-base .variable-name{ color:var(--accent); }
+.variable-top{ display:flex;align-items:center;gap:8px; }
+.variable-emoji{ font-size:20px;flex:none; }
+.decidia .variable-name{ flex:1;min-width:0;font-weight:700; }
+.variable-top select{ width:auto;max-width:40%; }
+.variable-control{ display:grid;grid-template-columns:1fr 112px;gap:10px;align-items:center;margin-top:8px; }
+.variable-meta{ display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:6px;font-size:12px;color:var(--muted); }
+.variable-meta select{ width:auto;padding:5px 8px;font-size:12px; }
+.variable-base{ display:inline-flex;align-items:center;gap:5px;cursor:pointer; }
+.variable-base input{ accent-color:var(--accent); }
+.variable-fmt{ margin-left:auto;font-weight:800;color:var(--text); }
+.variable-presets{ display:flex;flex-wrap:wrap;gap:6px;margin-top:12px; }
+.variable-presets .chip{ padding:6px 11px;font-size:12px; }
+
+/* Opciones y sus efectos */
+.option-card{
+  padding:12px;border-radius:14px;margin-bottom:10px;background:var(--panel-2);
+  border:1px solid var(--line);border-left:4px solid var(--opt);
+}
+.option-top{ display:flex;gap:8px;align-items:center;margin-bottom:8px; }
+.decidia .option-emoji{ width:48px;flex:none;text-align:center;padding-left:4px;padding-right:4px; }
+.decidia .option-name{ flex:1;min-width:0;font-weight:800; }
+.option-item{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px;gap:6px;align-items:center;
+  padding:8px 0;border-top:1px dashed var(--line);
+}
+.option-item select,.option-item input{ padding:7px 8px;font-size:12.5px;min-width:0; }
+/* hijos: 1 signo · 2 concepto · 3 variable · 4 × variable o cantidad · 5 frecuencia · 6 borrar */
+.option-item > :nth-child(1){ grid-area:1 / 1; }
+.option-item > :nth-child(2){ grid-area:1 / 2; }
+.option-item > :nth-child(3){ grid-area:2 / 1; }
+.option-item > :nth-child(4){ grid-area:2 / 2; }
+.option-item > :nth-child(5){ grid-area:3 / 1 / 4 / 3; }
+.option-item > :nth-child(6){ grid-area:1 / 3; }
+.option-notes{ margin-top:8px;font-size:12.5px;resize:vertical; }
+.aspect-values{ display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:8px; }
+.aspect-val{ display:grid;gap:4px;font-size:12px;color:var(--muted); }
+.aspect-val span{ border-left:3px solid var(--opt);padding-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.decidia-footer{ display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:4px 0 20px; }
+.decidia-footer .btn:first-child:not(.small){ flex:1 1 100%; }
+.decidia-danger{ color:var(--danger) !important;border-color:color-mix(in srgb,var(--danger) 50%,var(--line)) !important; }
+
+/* Ver a futuro */
+.future-bars{ display:grid;gap:12px;margin:6px 0 14px; }
+.future-row{ display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center; }
+.future-name{ font-weight:800;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.future-val{ font-weight:900;font-size:15px; }
+.future-track{ grid-column:1 / -1;height:12px;border-radius:999px;background:var(--panel-2);overflow:hidden; }
+.future-fill{ height:100%;border-radius:inherit;background:var(--opt);transition:width .45s cubic-bezier(.2,.8,.2,1); }
+.future-fill.is-negative{ background:repeating-linear-gradient(45deg,var(--danger) 0 6px,color-mix(in srgb,var(--danger) 70%,transparent) 6px 12px); }
+.future-sub{ grid-column:1 / -1;font-size:11.5px;color:var(--muted); }
+.future-table{ display:grid;gap:2px;font-size:12px;overflow-x:auto; }
+.future-head,.future-line{ display:grid;grid-auto-flow:column;grid-auto-columns:minmax(78px,1fr);gap:8px;padding:6px 8px;border-radius:8px; }
+.future-head{ color:var(--muted);font-weight:800; }
+.future-line.is-active{ background:color-mix(in srgb,var(--accent) 14%,transparent);font-weight:800; }
+.future-line span:not(:first-child),.future-head span:not(:first-child){ text-align:right; }
+
+/* Comparador A vs B (sin ganador) */
+.comparison-sides{ display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:12px; }
+.decidia .comparison-side{ text-align:center;font-weight:800; }
+.decidia .side-a{ border-color:#3fb8f0; }
+.decidia .side-b{ border-color:#9b83ff; }
+.side-a-txt{ color:#3fb8f0;font-weight:800; }
+.side-b-txt{ color:#9b83ff;font-weight:800; }
+.side-a-bg{ background:#3fb8f0; }
+.side-b-bg{ background:#9b83ff; }
+.comparison-vs{ font-weight:900;color:var(--muted);font-size:13px; }
+.comparison-inputs{ display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px; }
+.comparison-inputs label{ display:grid;gap:4px;font-size:12px;min-width:0; }
+.comparison-inputs label span{ overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.comparison-weight{ display:flex;align-items:center;gap:4px;margin-top:8px;font-size:12px;color:var(--muted); }
+.comparison-weight span{ margin-right:4px; }
+.weight-dot{
+  width:30px;height:30px;border-radius:50%;border:none;background:none;cursor:pointer;
+  color:var(--line);font-size:16px;transition:color .15s ease,transform .15s ease;
+}
+.weight-dot.on{ color:var(--accent); }
+.weight-dot:active{ transform:scale(1.25); }
+.weight-dot.big{ width:48px;height:48px;font-size:30px; }
+.comparison-row{ padding:12px 0;border-top:1px solid var(--line); }
+.comparison-row:first-of-type{ border-top:none; }
+.comparison-row.is-equal{ opacity:.7; }
+.comparison-label{ font-weight:800;font-size:13.5px;margin-bottom:6px; }
+.comparison-imp{ color:var(--accent);font-size:9px;letter-spacing:1px;vertical-align:middle; }
+.comparison-bar{ display:grid;grid-template-columns:minmax(0,78px) 1fr auto;gap:8px;align-items:center;font-size:12px;margin:4px 0; }
+.comparison-bar span{ overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.comparison-track{ height:10px;border-radius:999px;background:var(--panel-2);overflow:hidden; }
+.comparison-fill{ height:100%;border-radius:inherit;transition:width .4s cubic-bezier(.2,.8,.2,1); }
+.comparison-diff,.comparison-text{ font-size:12px;color:var(--muted);margin-top:2px; }
+
+/* Asistente "No sé" */
+.decidia-wizard h2{ margin:6px 0 10px; }
+.wizard-grid{ display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px; }
+.wizard-tile{
+  display:grid;place-items:center;gap:6px;min-height:92px;padding:10px;border-radius:16px;cursor:pointer;
+  border:1px solid var(--line);background:var(--panel-2);color:var(--text);font-weight:800;font-size:13px;
+  transition:transform .15s ease,border-color .15s ease;
+}
+.wizard-tile span{ font-size:28px; }
+.wizard-tile:hover{ transform:translateY(-3px);border-color:var(--accent); }
+.wizard-dots{ display:flex;gap:6px;margin:10px 0; }
+.wizard-dots span{ flex:1;height:5px;border-radius:999px;background:var(--line);transition:background .25s ease; }
+.wizard-dots span.on{ background:var(--accent); }
+.wizard-q{ font-size:19px;line-height:1.25; }
+.decidia .wizard-input{ font-size:20px;font-weight:800;min-height:52px; }
+.wizard-fmt{ margin-top:6px;font-size:14px;color:var(--muted);font-weight:700; }
+.wizard-scale{ display:flex;gap:4px;justify-content:center;margin:6px 0; }
+
+@keyframes decidia-in{ from{ opacity:0;transform:translateY(8px); } to{ opacity:1;transform:none; } }
+@keyframes decidia-float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-4px); } }
+
+/* 7 pestañas en teléfonos pequeños: texto más compacto para que quepan sin cortarse */
+@media (max-width:760px){
+  .tabs{ gap:3px;padding:5px; }
+  .tab-btn{ padding:5px 1px;font-size:9.5px;letter-spacing:-.2px; }
+}
+@media (max-width:430px){
+  .tabs{ left:6px;right:6px;gap:2px;padding:4px; }
+  .tab-btn{ font-size:8.5px;letter-spacing:-.3px;padding-left:0;padding-right:0; }
+  .decidia-hero{ padding:16px; }
+  .variable-control{ grid-template-columns:1fr 96px; }
+}
+@media (max-width:340px){
+  .tab-btn{ font-size:7.5px; }
+}

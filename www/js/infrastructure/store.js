@@ -28,10 +28,12 @@
   const byId = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   const byTsDesc = (a, b) => (b.ts || 0) - (a.ts || 0);
   const byDateDesc = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : byId(b, a));
+  const byUpdatedDesc = (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0);
   const byDueDate = (a, b) => ((a.dueDate || '') < (b.dueDate || '') ? -1 : (a.dueDate || '') > (b.dueDate || '') ? 1 : byId(a, b));
   const SORTS = {
     quests: byId, habits: byId, completions: byTsDesc, finance: byDateDesc,
-    bills: byDueDate, allocations: byTsDesc, inventory: byId, shopProducts: byId
+    bills: byDueDate, allocations: byTsDesc, inventory: byId, shopProducts: byId,
+    decisions: byUpdatedDesc
   };
 
   const store = {
@@ -271,6 +273,7 @@
       const sampleTitles = new Set(SAMPLE_QUESTS.map(q => q.title));
       return !s.completions.length && !s.habits.length && !s.finance.length &&
         !s.bills.length && !s.allocations.length && !s.inventory.length && !s.shopProducts.length &&
+        !(s.decisions || []).length &&
         !(s.character.totalXp || 0) && !(s.character.coins || 0) &&
         s.quests.every(q => sampleTitles.has(q.title) && !q.lastCompletedDate);
     },

@@ -163,6 +163,9 @@
     LQ.native.init({
       onBack: () => {
         if (isVisible("resumen")) return false;
+        // Una pantalla con navegación interna (p. ej. DECIDIA) puede atender el "atrás" primero.
+        const view = LQ.ui.views[LQ.app.router.current()];
+        if (view && typeof view.back === "function" && view.back()) return true;
         LQ.app.router.activate("resumen");
         return true;
       },
