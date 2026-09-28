@@ -21,6 +21,8 @@
     if (action === 'inc') state.character.streak = (state.character.streak||0) + 1;
     else if (action === 'reset') state.character.streak = 1;
     state.character.lastActiveDate = today;
+    const stats = state.profile.stats;
+    stats.bestStreak = Math.max(stats.bestStreak || 0, state.character.streak || 0);
     const level = Rules.levelInfo(state.character.totalXp||0, state.settings).level;
     return { level, leveledUp: level > before };
   }

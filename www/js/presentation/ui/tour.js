@@ -25,10 +25,14 @@
       text: 'Agrega lo que debes pagar: te avisamos días antes y el mismo día.' },
     { tab: 'tienda', target: '#view-tienda .shop-hero', title: 'Tienda',
       text: 'Gasta tus monedas en temas, mascotas y poderes.' },
+    { tab: 'social', target: '#view-social .segmented', title: 'Social',
+      text: 'Tu perfil con nombre y foto, tus logros, el ranking y tu clan para retos en grupo.' },
     { tab: 'ajustes', target: '#remindersPanel', title: 'Recordatorios',
       text: 'Activa las alarmas para que la app te avise aunque esté cerrada.' },
+    { tab: 'resumen', target: '#settingsBtn', title: 'Ajustes',
+      text: 'Los Ajustes están en este engranaje ⚙️. Ahí puedes repetir este tutorial.' },
     { tab: 'resumen', target: '#tabs', title: '¡Listo! 🎉',
-      text: 'Muévete entre secciones con esta barra. Puedes repetir el tutorial en Ajustes.' }
+      text: 'Muévete entre secciones con esta barra. ¡A cumplir misiones!' }
   ];
 
   let root = null, index = 0, onKey = null, onResize = null;
@@ -94,7 +98,7 @@
     // Espera a que la pestaña se dibuje, lleva el elemento a la vista y lo resalta.
     requestAnimationFrame(() => {
       const el = findTarget(step);
-      if (el && step.target !== '#tabs'){
+      if (el && step.target !== '#tabs' && step.target !== '#settingsBtn'){
         const tall = el.getBoundingClientRect().height > innerHeight * 0.5;
         el.scrollIntoView({ block: tall ? 'start' : 'center', behavior: 'auto' });
         if (tall) window.scrollBy(0, -16);

@@ -34,6 +34,7 @@
   const cloud = {
     get configured(){ return !!LQ.firebaseConfig; },
     user: null,
+    social: null,   // proveedor del modo social (ranking y clanes) con sesión iniciada
     auth: null,
     db: null,
     // Pregunta antes de reemplazar datos locales de otra cuenta (la UI la redefine).
@@ -84,6 +85,7 @@
     async _onUser(user){
       if (!user){
         this.user = null;
+        this.social = null;
         LQ.sync.unregister();
         this._notify();
         return;
@@ -96,6 +98,7 @@
       }
       await LQ.store.setMeta({ syncEmail: user.email || null });
       this.user = { uid: user.uid, email: user.email, name: user.displayName, photo: user.photoURL };
+      this.social = LQ.cloudProviders.createSocialProvider(globalThis.firebase, this.db, user.uid);
       LQ.sync.register(LQ.cloudProviders.createFirestoreProvider(globalThis.firebase, this.db, user.uid));
       this._notify();
       try{ await LQ.sync.syncNow(); }catch(e){ console.warn('LifeQuest: primera sincronización fallida', e); }
@@ -133,6 +136,11 @@
       if (!user) throw new Error('No hay ninguna sesión iniciada.');
       const provider = LQ.cloudProviders.createFirestoreProvider(firebase, this.db, user.uid);
       LQ.sync.unregister(); // que nada vuelva a subir datos mientras se borra
+      // Parte pública: sale del clan y borra el perfil del ranking.
+      const social = LQ.cloudProviders.createSocialProvider(firebase, this.db, user.uid);
+      const clanId = LQ.state.profile.social && LQ.state.profile.social.clanId;
+      if (clanId) await social.leaveClan(clanId).catch(e => console.warn('leaveClan', e));
+      await social.unpublish().catch(() => {});
       await provider.deleteAll();
       try{
         await user.delete();
@@ -149,7 +157,10 @@
       }
       if (LQ.native.isNative) await LQ.native.googleSignOut().catch(() => {});
       await LQ.store.setMeta({ syncAccount: null, syncPullCursor: null, syncPushedAt: null, syncEmail: null, lastSyncAt: null });
+      Object.assign(LQ.state.profile.social, { public: false, clanId: null, clanName: null });
+      await LQ.store.saveProfile();
       this.user = null;
+      this.social = null;
       this._notify();
     }
   };

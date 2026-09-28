@@ -8,7 +8,8 @@ const CORE = [
   'js/infrastructure/storage-adapters.js', 'js/infrastructure/store.js', 'js/infrastructure/sync.js', 'js/domain/game.js',
   'js/domain/reminders.js', 'js/infrastructure/firestore-provider.js',
   'js/domain/finance-rules.js', 'js/domain/finance.js',
-  'js/domain/shop-catalog.js', 'js/domain/shop.js'
+  'js/domain/shop-catalog.js', 'js/domain/shop.js',
+  'js/domain/achievements.js', 'js/domain/social.js'
 ];
 
 function loadCore(){

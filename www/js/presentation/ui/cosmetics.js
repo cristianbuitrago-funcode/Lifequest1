@@ -48,9 +48,10 @@
     // Avatar + marco
     const av = document.getElementById('charAvatar');
     if (av){
+      // La foto del perfil tiene prioridad sobre el avatar comprado en la Tienda.
       const avatar = eq.avatar && eq.avatar.effect.value;
-      av.hidden = !avatar;
-      av.innerHTML = avatar ? ui.iconHtml(avatar) : '';
+      av.hidden = false;
+      av.innerHTML = ui.avatarHtml(LQ.state.profile.photo, avatar);
       av.className = 'char-avatar' + (eq.frame ? ' frame-' + eq.frame.effect.value : '');
     }
 

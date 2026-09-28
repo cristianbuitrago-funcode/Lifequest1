@@ -5,7 +5,7 @@
 (function (LQ) {
   "use strict";
 
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '1.5.0';
   const APP_OWNER = 'Cristian Camilo Buitrago Espinosa';
 
   const DEFAULT_CATEGORIES = [
@@ -80,7 +80,14 @@
     },
     boosts: { xpDouble: 0 },   // misiones restantes con XP doble
     shields: 0,                // escudos de racha activos
-    stats: { billsPaid: 0, billsOnTime: 0, billStreak: 0, bestBillStreak: 0, purchases: 0, coinsSpent: 0 }
+    stats: { billsPaid: 0, billsOnTime: 0, billStreak: 0, bestBillStreak: 0, purchases: 0, coinsSpent: 0, bestStreak: 0 },
+    // Perfil personal (opcional): nombre y foto (data URL JPEG pequeña)
+    displayName: '',
+    photo: null,
+    // Logros desbloqueados: { id: 'AAAA-MM-DD' }
+    achievements: {},
+    // Parte social (requiere cuenta): perfil público, clan y retos reclamados
+    social: { public: false, clanId: null, clanName: null, claimedWeeks: {} }
   };
 
   const SAMPLE_QUESTS = [
@@ -102,6 +109,13 @@
     Object.assign(out.boosts, p.boosts || {});
     if (typeof p.shields === 'number') out.shields = p.shields;
     Object.assign(out.stats, p.stats || {});
+    if (typeof p.displayName === 'string') out.displayName = p.displayName.slice(0, 30);
+    if (typeof p.photo === 'string' && /^data:image\//.test(p.photo)) out.photo = p.photo;
+    if (p.achievements && typeof p.achievements === 'object') out.achievements = Object.assign({}, p.achievements);
+    if (p.social){
+      Object.assign(out.social, p.social);
+      out.social.claimedWeeks = Object.assign({}, p.social.claimedWeeks || {});
+    }
     if (p.updatedAt) out.updatedAt = p.updatedAt;
     return out;
   }

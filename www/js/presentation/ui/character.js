@@ -18,7 +18,9 @@
     $('xpIntoVal').textContent = info.xpIntoLevel;
     $('xpNeedVal').textContent = info.xpForNext;
     $('xpTotalVal').textContent = (state.character.totalXp||0) + ' XP totales';
-    $('levelSub').textContent = TITLES[Math.min(TITLES.length-1, Math.floor((info.level-1)/3))];
+    const title = TITLES[Math.min(TITLES.length-1, Math.floor((info.level-1)/3))];
+    const name = (state.profile.displayName || '').trim();
+    $('levelSub').textContent = name ? name + ' · ' + title : title;
 
     // Consumibles activos de la Tienda (poción de XP doble, escudos de racha)
     const p = state.profile, bits = [];

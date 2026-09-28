@@ -24,6 +24,11 @@ dispositivo (IndexedDB) y se conservan entre sesiones.
   veces el día del vencimiento). Con "Alarmas puntuales" suenan a su hora aunque
   la app esté cerrada.
 - **Tutorial guiado** la primera vez (se repite desde Ajustes).
+- **Social**: perfil con nombre y foto de la galería, **23 logros** con
+  recompensa en monedas, **ranking** (semanal, global y del clan) y **clanes**
+  de hasta 30 personas con un **reto semanal en grupo**. Ranking y clanes
+  necesitan la nube (Firebase) y una cuenta de Google; el perfil público es
+  opcional y nunca incluye finanzas, misiones ni hábitos.
 - **Finanzas**
   - *Resumen*: ingresos, gastos, saldo, calendario y movimientos.
   - *Pagos*: obligaciones (único, diario, semanal, quincenal, mensual o cada N
