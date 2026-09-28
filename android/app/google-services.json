@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "584447960844",
+    "project_id": "lifecoinquest",
+    "storage_bucket": "lifecoinquest.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:584447960844:android:60eb133a967a374be04b29",
+        "android_client_info": {
+          "package_name": "com.cristianbuitrago.lifequest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "584447960844-an4om799857bjq5sfmc53t65cn2372k1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cristianbuitrago.lifequest",
+            "certificate_hash": "24e4b7a3b802c3e7be2ef83f79254e695c7c7739"
+          }
+        },
+        {
+          "client_id": "584447960844-2djsse2gpev6ki0noou69id6m2lh5olm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqPUPO-aLOXYx2caJ1VcMg-VaWeW6iXns"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "584447960844-2djsse2gpev6ki0noou69id6m2lh5olm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
