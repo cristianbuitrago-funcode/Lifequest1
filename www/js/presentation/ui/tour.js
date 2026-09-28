@@ -27,6 +27,8 @@
       text: 'Gasta tus monedas en temas, mascotas y poderes.' },
     { tab: 'social', target: '#view-social .segmented', title: 'Social',
       text: 'Tu perfil con nombre y foto, tus logros, el ranking y tu clan para retos en grupo.' },
+    { tab: 'decidia', target: '#view-decidia .decidia-hero', title: 'DECIDIA 🧠',
+      text: 'Convierte tus decisiones en escenarios: escribe qué estás pensando y compara opciones. No da XP: es solo para ti.' },
     { tab: 'ajustes', target: '#remindersPanel', title: 'Recordatorios',
       text: 'Activa las alarmas para que la app te avise aunque esté cerrada.' },
     { tab: 'resumen', target: '#settingsBtn', title: 'Ajustes',

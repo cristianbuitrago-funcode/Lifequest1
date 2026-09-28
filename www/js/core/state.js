@@ -20,7 +20,8 @@
       bills: [],          // pagos / obligaciones
       allocations: [],    // repartos de ingresos entre sobres
       inventory: [],      // objetos comprados en la tienda
-      shopProducts: []    // productos creados o editados desde "Administrar tienda"
+      shopProducts: [],   // productos creados o editados desde "Administrar tienda"
+      decisions: []       // DECIDIA: decisiones de escenarios y comparaciones
     };
   };
 

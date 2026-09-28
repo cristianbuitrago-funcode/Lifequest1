@@ -29,6 +29,13 @@ dispositivo (IndexedDB) y se conservan entre sesiones.
   de hasta 30 personas con un **reto semanal en grupo**. Ranking y clanes
   necesitan la nube (Firebase) y una cuenta de Google; el perfil público es
   opcional y nunca incluye finanzas, misiones ni hábitos.
+- **DECIDIA** 🧠 — "Convierte tus decisiones en escenarios": escribe qué estás
+  pensando decidir y DECIDIA arma opciones con variables (dinero, precio,
+  horas…) que puedes mover con deslizadores. Incluye **¿Y si…?** (cambios
+  temporales al instante), **Ver a futuro** (1 semana, 1 mes, 6 meses y 1 año),
+  un asistente **No sé** con preguntas paso a paso y un **comparador A vs B**
+  con la importancia de cada aspecto. Nunca dice qué opción es "mejor", no da
+  XP ni monedas y todo se calcula en el dispositivo (sin IA externa).
 - **Finanzas**
   - *Resumen*: ingresos, gastos, saldo, calendario y movimientos.
   - *Pagos*: obligaciones (único, diario, semanal, quincenal, mensual o cada N
