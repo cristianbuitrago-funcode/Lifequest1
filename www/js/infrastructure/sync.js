@@ -9,6 +9,7 @@
  *     async pull(cursor) -> {docs, records, tombstones, cursor}
  *                            // cambios remotos posteriores a `cursor` (reloj del servidor)
  *     async push(changes)   // mismo formato que store.changesSince()
+ *     watch(fn) -> unsubscribe  // (opcional) avisa cuando otro dispositivo sube cambios
  *   }
  *
  * Cada sincronización: baja lo nuevo → fusiona ("gana el más reciente") →
@@ -52,8 +53,25 @@
     _again: false,
     _listeners: new Set(),
 
-    register(provider){ this.provider = provider; this._set({ state: 'idle', error: null }); },
-    unregister(){ this.provider = null; this._set({ state: 'idle', error: null }); },
+    _unwatch: null,
+
+    register(provider){
+      this.unregister();
+      this.provider = provider;
+      // Sincronización automática: cuando otro dispositivo sube cambios, se bajan al momento.
+      if (typeof provider.watch === 'function'){
+        this._unwatch = provider.watch(() => {
+          if (this.provider === provider) this.syncNow().catch(() => undefined);
+        });
+      }
+      this._set({ state: 'idle', error: null });
+    },
+    unregister(){
+      if (this._unwatch){ try{ this._unwatch(); }catch(e){ /* ya cerrada */ } }
+      this._unwatch = null;
+      this.provider = null;
+      this._set({ state: 'idle', error: null });
+    },
     get enabled(){ return !!this.provider; },
 
     onStatus(fn){ this._listeners.add(fn); return () => this._listeners.delete(fn); },

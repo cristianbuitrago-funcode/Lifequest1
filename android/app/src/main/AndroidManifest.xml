@@ -27,6 +27,16 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Vuelve a programar los recordatorios también después de actualizar la app
+             (el receptor del plugin solo lo hacía al reiniciar el teléfono). -->
+        <receiver
+            android:name="com.capacitorjs.plugins.localnotifications.LocalNotificationRestoreReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
     </application>
 
     <!-- Permissions -->
@@ -36,4 +46,10 @@
          esté cerrada. El usuario lo activa en Ajustes → "Alarmas puntuales"
          (Android → Alarmas y recordatorios); sin él se usan alarmas inexactas. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Android 13+: permiso de alarmas exactas concedido automáticamente a apps cuya
+         función principal son los recordatorios. Sin él, Android 14 apaga las alarmas
+         exactas por defecto y los avisos con la app cerrada se retrasan horas. -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <!-- Para mostrar el diálogo "Permitir en segundo plano" (quitar la optimización de batería). -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 </manifest>

@@ -1,6 +1,6 @@
 /*
- * Rueda (gráfico radar) reutilizable: la usan Resumen (XP por categoría) y
- * Hábitos (constancia de cada hábito). Toma los colores del tema actual.
+ * Rueda (gráfico radar) reutilizable: la usa el Mapa de evolución de Resumen
+ * (nivel 1–10 de cada pilar). Toma los colores del tema actual.
  */
 (function (LQ) {
   "use strict";
@@ -16,8 +16,11 @@
    * @param {HTMLCanvasElement} canvas
    * @param {string[]} labels  nombre de cada eje
    * @param {number[]} values  valor de cada eje entre 0 y 1
-   * @param {{suffixes?: string[], radius?: number, maxLabel?: number}} [opts]
+   * @param {{suffixes?: string[], radius?: number, maxLabel?: number,
+   *          rings?: number, ringLabels?: boolean, colors?: string[]}} [opts]
    *        suffixes: texto pequeño bajo cada etiqueta (p. ej. "80 %")
+   *        rings: número de anillos (4 por defecto); ringLabels: numera los anillos
+   *        colors: color del punto y la etiqueta de cada eje
    */
   ui.drawRadar = function(canvas, labels, values, opts){
     if (!canvas) return;
@@ -35,14 +38,19 @@
     const angle = (i) => (Math.PI * 2 * i / n) - Math.PI / 2;
 
     // anillos
-    for (let ring = 1; ring <= 4; ring++){
+    const rings = opts.rings || 4;
+    for (let ring = 1; ring <= rings; ring++){
       ctx.beginPath();
       for (let i = 0; i <= n; i++){
-        const a = angle(i), r = R * ring / 4;
+        const a = angle(i), r = R * ring / rings;
         const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
         i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = lineColor; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = lineColor; ctx.lineWidth = ring === rings ? 1.5 : 1; ctx.stroke();
+    }
+    if (opts.ringLabels){
+      ctx.fillStyle = muted; ctx.font = '9px Manrope, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      for (let ring = 1; ring <= rings; ring++){ if (rings <= 5 || ring % 2 === 0) ctx.fillText(String(ring), cx - 4, cy - R * ring / rings); }
     }
     // ejes y etiquetas
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -51,7 +59,7 @@
       ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
       ctx.strokeStyle = lineColor; ctx.stroke();
       const lx = cx + Math.cos(a) * (R + 24), ly = cy + Math.sin(a) * (R + 22);
-      ctx.fillStyle = muted; ctx.font = '11px Manrope, sans-serif';
+      ctx.fillStyle = (opts.colors && opts.colors[i]) || muted; ctx.font = (opts.colors ? '700 ' : '') + '11px Manrope, sans-serif';
       ctx.fillText(shorten(labels[i], opts.maxLabel || 14), lx, ly - (opts.suffixes ? 6 : 0));
       if (opts.suffixes){
         ctx.fillStyle = text; ctx.font = '700 11px Manrope, sans-serif';
@@ -71,5 +79,15 @@
     ctx.strokeStyle = accent;
     ctx.lineWidth = 2;
     ctx.fill(); ctx.stroke();
+    // puntos de cada eje con su color
+    if (opts.colors){
+      for (let i = 0; i < n; i++){
+        const a = angle(i), r = R * Math.max(0.04, Math.min(1, values[i] || 0));
+        ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = opts.colors[i] || accent; ctx.fill();
+        ctx.lineWidth = 1.5; ctx.strokeStyle = styles.getPropertyValue('--panel').trim() || '#000'; ctx.stroke();
+      }
+    }
+    ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fillStyle = accent; ctx.fill();
   };
 })(globalThis.LifeQuest = globalThis.LifeQuest || {});

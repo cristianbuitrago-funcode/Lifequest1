@@ -18,7 +18,7 @@
     { tab: 'misiones', target: '#view-misiones .quest-check', fallback: '#view-misiones .panel:last-child', title: 'Complétalas',
       text: 'Toca ✓ al terminar para ganar XP y monedas. Si no haces una diaria, pierdes monedas.' },
     { tab: 'habitos', target: '#view-habitos .panel', title: 'Hábitos',
-      text: 'Márcalos cada día. Más días seguidos = más premios. Tu rueda muestra qué tan constante eres.' },
+      text: 'Márcalos cada día en tu rastreador del mes. Cada hábito cumplido suma un bloque a tu escalera de recompensas.' },
     { tab: 'finanzas', target: '#view-finanzas .segmented', title: 'Tu dinero',
       text: 'Registra ingresos y gastos, tus pagos y reparte el dinero en sobres.' },
     { tab: 'finanzas', target: '[data-fin-section="pagos"]', title: 'Pagos',

@@ -5,7 +5,7 @@
 (function (LQ) {
   "use strict";
 
-  const APP_VERSION = '1.6.1';
+  const APP_VERSION = '1.7.0';
   const APP_OWNER = 'Cristian Camilo Buitrago Espinosa';
 
   const DEFAULT_CATEGORIES = [
@@ -39,6 +39,11 @@
     },
     // Tutorial guiado de la primera vez
     tutorialDone: false,
+    // Rastreador de hábitos: premios de la escalera y reflexión de cada mes
+    // { 'AAAA-MM': { rewards: ['', '', ''], claimed: {20: fecha}, reflection: '' } }
+    habitMonths: {},
+    // Mapa de evolución: pilares elegidos (null = uno por categoría) y conteos a mano
+    evolution: { pillars: null, manual: {} },
     // Recompensa por registrar un pago (a tiempo / con retraso)
     billRewards: {
       onTime: {xp:15, coins:5},
@@ -146,6 +151,11 @@
       if (Array.isArray(s.reminders.extra)) out.reminders.extra = s.reminders.extra.filter(x => x && x.time);
     }
     if (typeof s.tutorialDone === 'boolean') out.tutorialDone = s.tutorialDone;
+    if (s.habitMonths && typeof s.habitMonths === 'object') out.habitMonths = JSON.parse(JSON.stringify(s.habitMonths));
+    if (s.evolution && typeof s.evolution === 'object'){
+      if (Array.isArray(s.evolution.pillars)) out.evolution.pillars = s.evolution.pillars.slice(0, 6).map(p => Object.assign({}, p));
+      if (s.evolution.manual && typeof s.evolution.manual === 'object') out.evolution.manual = JSON.parse(JSON.stringify(s.evolution.manual));
+    }
     return out;
   }
 

@@ -853,6 +853,7 @@ body.has-bg{ background-attachment:fixed;background-repeat:no-repeat; }
 .about-links a{ color:var(--accent);font-weight:700;font-size:13px;text-decoration:none; }
 .link-danger{ display:block;margin-top:14px;padding:0;border:none;background:none;color:var(--danger);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:underline; }
 .link-danger:disabled{ opacity:.5; }
+.link-btn{ display:inline;padding:0;border:none;background:none;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline; }
 
 /* Responsive */
 @media (max-width:760px){
@@ -929,6 +930,91 @@ body.has-bg{ background-attachment:fixed;background-repeat:no-repeat; }
   }
 }
 
+
+/* =========================================================================
+   Rastreador de hábitos y Mapa de evolución
+   ========================================================================= */
+.radar-wrap canvas{ max-width:100%;height:auto; }
+.tracker-head{ display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 2px 12px; }
+.tracker-title{ margin:0;font-size:20px; }
+.tracker-subtitle{ margin:18px 4px 10px;font-size:17px; }
+.month-nav{ display:inline-flex;align-items:center;gap:4px;font-weight:800;font-size:13px;text-transform:capitalize; }
+.month-nav .icon-btn{ font-size:20px;line-height:1;width:32px;height:32px;border-radius:10px;border:1px solid var(--line);color:var(--text); }
+.month-nav .icon-btn:hover{ color:var(--accent); }
+.month-nav .icon-btn:disabled{ opacity:.35;cursor:default; }
+.tracker-motto{ text-align:center;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:8px 0 18px; }
+
+/* Cuadrícula hábito × día (se desplaza sola, la página no) */
+.tracker-scroll{ overflow-x:auto;margin:0 -4px;padding:0 4px 6px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth; }
+.tracker-grid{ border-collapse:separate;border-spacing:3px;font-size:11px; }
+.tracker-grid th{ font-weight:800;color:var(--muted);text-align:center;min-width:24px; }
+.tracker-grid th.is-today{ color:var(--accent); }
+.tracker-grid .tracker-name{
+  position:sticky;left:0;z-index:1;text-align:left;min-width:108px;max-width:130px;padding:0 8px 0 2px;
+  background:var(--panel);color:var(--text);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.tracker-grid td{ padding:0; }
+.tracker-grid td.is-today{ background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:8px; }
+.tracker-cell{
+  display:grid;place-items:center;width:24px;height:24px;border-radius:7px;border:1px solid var(--line);
+  background:var(--panel-2);color:transparent;font-size:12px;font-weight:900;padding:0;
+}
+.tracker-cell.on{ background:var(--hab,var(--accent));border-color:var(--hab,var(--accent));color:#fff;animation:tracker-pop .25s ease; }
+.tracker-cell.future{ opacity:.35; }
+button.tracker-cell{ cursor:pointer;border:2px solid var(--accent); }
+.tracker-sum{ padding-left:6px !important;font-weight:800;color:var(--text);text-align:center; }
+@keyframes tracker-pop{ from{ transform:scale(.6); } to{ transform:scale(1); } }
+
+/* Gráfico de hábitos por día */
+.habit-chart{ display:grid;grid-template-columns:auto 1fr;gap:6px;height:170px;margin-top:6px; }
+.habit-chart-y{ display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:var(--muted);padding-bottom:16px;text-align:right; }
+.habit-chart-bars{ display:grid;grid-template-columns:repeat(var(--days),minmax(0,1fr));gap:2px;align-items:end;border-left:1px solid var(--line);border-bottom:1px solid var(--line);padding-left:3px; }
+.habit-bar{ position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end; }
+.habit-bar i{ display:block;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 55%,transparent));transition:height .4s cubic-bezier(.2,.8,.2,1);min-height:0; }
+.habit-bar.is-today i{ background:var(--accent-2,var(--accent)); }
+.habit-bar em{ position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:8px;font-style:normal;color:var(--muted); }
+.habit-bar:nth-child(odd):not(.is-today) em{ visibility:hidden; }
+.habit-bar.is-today em{ color:var(--accent);font-weight:800; }
+
+/* Escalera de recompensas */
+.reward-ladder{ display:grid;gap:12px;margin-top:4px; }
+.reward-step{ padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--panel-2);transition:border-color .2s ease; }
+.reward-step.reached{ border-color:var(--accent); }
+.reward-step.claimed{ opacity:.8; }
+.reward-top{ display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:12.5px; }
+.reward-top b{ color:var(--accent);text-transform:uppercase;letter-spacing:.04em;font-size:11.5px; }
+.reward-state{ font-size:11.5px;color:var(--muted);font-weight:700; }
+.reward-state.done{ color:var(--success); }
+.reward-blocks{ display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:8px; }
+.reward-blocks i{ height:12px;border-radius:3px;border:1px solid var(--line);background:var(--panel); }
+.reward-blocks i.on{ background:var(--accent);border-color:var(--accent); }
+.reward-input{ font-size:13px; }
+
+/* Mapa de evolución */
+.evo-table{ display:grid;gap:2px;margin-top:6px;font-size:12.5px; }
+.evo-row{ display:grid;grid-template-columns:minmax(0,1fr) 44px 92px 74px;gap:8px;align-items:center;padding:8px 4px;border-top:1px solid var(--line); }
+.evo-headrow{ border-top:none;font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em; }
+.evo-row > span:not(.evo-name){ text-align:center; }
+.evo-name{ display:flex;align-items:center;gap:8px;min-width:0; }
+.evo-name > span{ display:grid;min-width:0; }
+.evo-name b{ overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.evo-name small{ font-size:10.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.evo-dot{ flex:none;width:12px;height:12px;border-radius:4px;background:var(--pil); }
+.evo-done{ display:inline-flex;align-items:center;justify-content:center;gap:6px; }
+.evo-step{ width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);font-weight:900;cursor:pointer; }
+.evo-step:active{ transform:scale(.92); }
+.evo-level{ display:grid;gap:3px;justify-items:center; }
+.evo-level i{ display:block;width:100%;height:6px;border-radius:999px;background:var(--panel-2);overflow:hidden; }
+.evo-level em{ display:block;height:100%;background:var(--pil);transition:width .4s ease; }
+.pillar-edit{ display:grid;grid-template-columns:40px 1fr 34px;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--line); }
+.pillar-edit input[type=color]{ width:40px;height:38px;padding:2px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2); }
+.pillar-edit select{ grid-column:1 / 3; }
+.pillar-meta{ grid-column:1 / 4;display:flex;align-items:center;gap:8px;margin:0;text-transform:none;letter-spacing:normal; }
+.pillar-meta input{ width:90px; }
+@media (max-width:430px){
+  .evo-row{ grid-template-columns:minmax(0,1fr) 34px 84px 52px;gap:4px; }
+  .tracker-grid .tracker-name{ min-width:92px;max-width:104px; }
+}
 
 /* =========================================================================
    DECIDIA — decisiones y escenarios (módulo independiente del juego)

@@ -263,8 +263,18 @@
     if (message) ui.showToast(message);
   }
 
+  let askedBattery = false;
   async function ensurePermission(){
-    if (await LQ.native.notifications.hasPermission(true)) return true;
+    if (await LQ.native.notifications.hasPermission(true)){
+      // La primera vez que se activan avisos, pide también que Android no limite
+      // la app en segundo plano (si no, muchos teléfonos bloquean las alarmas).
+      if (!askedBattery){
+        askedBattery = true;
+        const power = await LQ.native.power.status();
+        if (!power.unrestricted) await LQ.native.power.request();
+      }
+      return true;
+    }
     ui.showToast('Permite las notificaciones de LifeCoinQuest en los ajustes de Android');
     return false;
   }
@@ -346,7 +356,14 @@
   async function renderReminderTools(){
     const box = document.getElementById('reminderTools');
     if (!box) return;
-    const exact = await LQ.native.notifications.exactAllowed();
+    const [exact, power] = await Promise.all([LQ.native.notifications.exactAllowed(), LQ.native.power.status()]);
+    // Consejos extra según el fabricante (sus "ahorradores" cierran las apps en segundo plano).
+    const brand = power.manufacturer || '';
+    const oemTip = /xiaomi|redmi|poco/.test(brand) ? ' En Xiaomi activa también <b>Inicio automático</b> y en Batería elige <b>Sin restricciones</b>.'
+      : /huawei|honor/.test(brand) ? ' En Huawei/Honor: Batería → Inicio de apps → LifeCoinQuest → <b>Gestionar manualmente</b> y activa todo.'
+      : /samsung/.test(brand) ? ' En Samsung: Batería → Límites de uso en segundo plano, y quita LifeCoinQuest de las apps en <b>suspensión</b>.'
+      : /oppo|realme|oneplus|vivo/.test(brand) ? ' En tu teléfono permite también el <b>Inicio automático</b> y la <b>actividad en segundo plano</b>.'
+      : '';
     box.innerHTML = `
       <div class="reminder-row">
         <span class="toggle-text">Alarmas puntuales
@@ -354,10 +371,25 @@
         </span>
         ${exact ? '' : '<button class="btn small" id="exactBtn">Activar</button>'}
       </div>
+      <div class="reminder-row">
+        <span class="toggle-text">Funcionar en segundo plano
+          <small>${power.unrestricted ? '✓ Sin restricciones de batería: los avisos llegan con la app cerrada.' : 'Android está limitando la app para ahorrar batería y puede bloquear los avisos con la app cerrada.'}</small>
+        </span>
+        ${power.unrestricted ? '' : '<button class="btn small" id="batteryBtn">Permitir</button>'}
+      </div>
       <div class="backup-actions" style="margin-top:10px">
         <button class="btn ghost small" id="testNotifBtn">🔔 Probar en 1 minuto</button>
       </div>
-      <div class="hint">¿No suenan con la app cerrada? En Android abre Ajustes → Apps → LifeCoinQuest → Batería y elige <b>Sin restricciones</b>. En Xiaomi, activa también el <b>Inicio automático</b>.</div>`;
+      <div class="hint">¿Aún no suenan con la app cerrada? No la cierres deslizándola desde las apps recientes (en algunos teléfonos eso cancela sus alarmas).${oemTip}
+        <button class="link-btn" id="appSettingsBtn" type="button">Abrir ajustes de la app</button></div>`;
+    const batteryBtn = document.getElementById('batteryBtn');
+    if (batteryBtn) batteryBtn.onclick = async () => {
+      await LQ.native.power.request();
+      // El diálogo es del sistema: se vuelve a comprobar al regresar a la app.
+      setTimeout(renderReminderTools, 1500);
+    };
+    const appBtn = document.getElementById('appSettingsBtn');
+    if (appBtn) appBtn.onclick = () => LQ.native.power.openAppSettings();
     const exactBtn = document.getElementById('exactBtn');
     if (exactBtn) exactBtn.onclick = async () => {
       const ok = await LQ.native.notifications.requestExact();

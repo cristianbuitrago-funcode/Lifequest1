@@ -7,6 +7,8 @@
  *   users/{uid}/docs/{character|settings}
  *   users/{uid}/{quests|completions|habits|finance}/{id}
  *   users/{uid}/tombstones/{coleccion}__{id}
+ *   users/{uid}/meta/clock   ← cambia con cada subida; los demás dispositivos
+ *                              lo escuchan para sincronizarse al instante
  *
  * Cada documento lleva `syncedAt` (hora del servidor), que sirve de cursor
  * para bajar solo lo nuevo.
@@ -28,6 +30,9 @@
     const root = db.collection('users').doc(uid);
     const COLLECTIONS = LQ.storage.COLLECTIONS;
     const serverTime = () => firebase.firestore.FieldValue.serverTimestamp();
+    const clock = root.collection('meta').doc('clock');
+    // Identifica esta sesión de la app para ignorar el aviso de sus propias subidas.
+    const DEVICE = Math.random().toString(36).slice(2) + Date.now().toString(36);
 
     return {
       name: 'firestore',
@@ -69,17 +74,37 @@
           // El registro borrado ya no hace falta en la nube; la lápida propaga el borrado.
           if (COLLECTIONS.includes(t.collection)) writes.push(b => b.delete(root.collection(t.collection).doc(String(t.id))));
         });
+        if (!writes.length) return;
+        // "Reloj" de la cuenta: avisa a los otros dispositivos de que hay cambios.
+        writes.push(b => b.set(clock, { syncedAt: serverTime(), device: DEVICE }));
         await commitAll(writes);
+      },
+
+      /**
+       * Llama a onRemoteChange() cada vez que OTRO dispositivo sube cambios.
+       * Escucha un solo documento, así que casi no gasta datos ni lecturas.
+       * @returns {function} para dejar de escuchar
+       */
+      watch(onRemoteChange){
+        let first = true;
+        return clock.onSnapshot(snap => {
+          // La primera lectura solo describe el estado actual (la sincronización
+          // inicial ya lo cubre); las escrituras locales pendientes son nuestras.
+          if (first){ first = false; return; }
+          if (snap.metadata.hasPendingWrites) return;
+          const data = snap.data();
+          if (data && data.device !== DEVICE) onRemoteChange();
+        }, e => console.warn('LifeCoinQuest: escucha de cambios', e));
       },
 
       /** Borra todos los datos de la cuenta en la nube (para "Eliminar mi cuenta"). */
       async deleteAll(){
         const names = ['docs', ...COLLECTIONS, 'tombstones'];
         const snaps = await Promise.all(names.map(n => root.collection(n).get()));
-        const writes = [];
+        const writes = [b => b.delete(clock)];
         snaps.forEach(snap => snap.docs.forEach(d => writes.push(b => b.delete(d.ref))));
         await commitAll(writes);
-        return writes.length;
+        return writes.length - 1;
       }
     };
 

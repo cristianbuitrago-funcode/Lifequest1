@@ -174,5 +174,21 @@
     }
   };
 
+  // -------------------------------------------------------------------------
+  // Batería (plugin propio LqSystem, android/app/src/main/java/.../SystemPlugin.java)
+  // -------------------------------------------------------------------------
+  native.power = {
+    /** {unrestricted, manufacturer}; unrestricted=true si Android no limita la app en segundo plano. */
+    async status(){
+      if (!isNative) return { unrestricted: true, manufacturer: '' };
+      try{ return await plugin('LqSystem').batteryStatus(); }
+      catch(e){ console.warn('batteryStatus', e); return { unrestricted: true, manufacturer: '' }; }
+    },
+    /** Abre el diálogo del sistema para permitir la app en segundo plano. */
+    request(){ return isNative ? plugin('LqSystem').requestUnrestrictedBattery().catch(e => console.warn(e)) : Promise.resolve(); },
+    /** Abre la ficha de la app en los Ajustes de Android. */
+    openAppSettings(){ return isNative ? plugin('LqSystem').openAppSettings().catch(e => console.warn(e)) : Promise.resolve(); }
+  };
+
   LQ.native = native;
 })(globalThis.LifeQuest = globalThis.LifeQuest || {});
