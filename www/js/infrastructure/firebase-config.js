@@ -10,7 +10,14 @@
 (function (LQ) {
   "use strict";
 
-  LQ.firebaseConfig = null;
+  LQ.firebaseConfig = {
+    apiKey: "AIzaSyC3rDxtuCK4iKN_3lX-ePNNSqWPZko9LFE",
+    authDomain: "lifecoinquest.firebaseapp.com",
+    projectId: "lifecoinquest",
+    storageBucket: "lifecoinquest.firebasestorage.app",
+    messagingSenderId: "584447960844",
+    appId: "1:584447960844:web:3e7cac967edf0a23e04b29"
+  };
 
   // Ejemplo:
   // LQ.firebaseConfig = {
