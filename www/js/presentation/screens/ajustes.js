@@ -356,14 +356,26 @@
   async function renderReminderTools(){
     const box = document.getElementById('reminderTools');
     if (!box) return;
-    const [exact, power] = await Promise.all([LQ.native.notifications.exactAllowed(), LQ.native.power.status()]);
+    const [exact, power, st] = await Promise.all([LQ.native.notifications.exactAllowed(), LQ.native.power.status(), LQ.native.notifications.status()]);
     // Consejos extra según el fabricante (sus "ahorradores" cierran las apps en segundo plano).
     const brand = power.manufacturer || '';
     const oemTip = /xiaomi|redmi|poco/.test(brand) ? ' En Xiaomi activa también <b>Inicio automático</b> y en Batería elige <b>Sin restricciones</b>.'
       : /huawei|honor/.test(brand) ? ' En Huawei/Honor: Batería → Inicio de apps → LifeCoinQuest → <b>Gestionar manualmente</b> y activa todo.'
       : /samsung/.test(brand) ? ' En Samsung: Batería → Límites de uso en segundo plano, y quita LifeCoinQuest de las apps en <b>suspensión</b>.'
       : /oppo|realme|oneplus|vivo/.test(brand) ? ' En tu teléfono permite también el <b>Inicio automático</b> y la <b>actividad en segundo plano</b>.'
+      : /nubia|zte/.test(brand) ? ' En Nubia/ZTE: Ajustes → Apps → LifeCoinQuest → permite el <b>Inicio automático</b> y la <b>ejecución en segundo plano</b>, y en Batería elige <b>Sin restricciones</b>.'
       : '';
+    // Diagnóstico: qué puede estar impidiendo que suenen.
+    const fmtNext = (ms) => new Date(ms).toLocaleString('es-CO', { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+    const check = (ok, text) => `<li class="${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'} ${text}</li>`;
+    const diag = st ? `
+      <ul class="notif-diag">
+        ${check(st.notificationsEnabled, st.notificationsEnabled ? 'Notificaciones permitidas' : 'Las notificaciones de la app están <b>apagadas</b> en Android')}
+        ${check(st.channelImportance >= 4, st.channelImportance === 0 ? 'El canal "Recordatorios" está <b>bloqueado</b>'
+          : st.channelImportance >= 4 ? 'Canal "Recordatorios" con sonido y ventana emergente' : 'El canal "Recordatorios" está en modo <b>silencioso</b>')}
+        ${check(st.pending > 0, st.pending > 0 ? st.pending + ' avisos programados · el próximo: ' + escapeHtml(fmtNext(st.next)) : 'No hay avisos programados (activa alguno arriba)')}
+      </ul>
+      ${!st.notificationsEnabled || st.channelImportance < 4 ? '<button class="btn small" id="channelBtn">Arreglar sonido y ventana</button>' : ''}` : '';
     box.innerHTML = `
       <div class="reminder-row">
         <span class="toggle-text">Alarmas puntuales
@@ -377,8 +389,11 @@
         </span>
         ${power.unrestricted ? '' : '<button class="btn small" id="batteryBtn">Permitir</button>'}
       </div>
+      ${diag}
       <div class="backup-actions" style="margin-top:10px">
-        <button class="btn ghost small" id="testNotifBtn">🔔 Probar en 1 minuto</button>
+        <button class="btn ghost small" id="nowNotifBtn">🔔 Probar ahora</button>
+        <button class="btn ghost small" id="testNotifBtn">⏱️ Probar en 1 minuto</button>
+        ${st ? '<button class="btn ghost small" id="soundBtn">🔊 Sonido del aviso</button>' : ''}
       </div>
       <div class="hint">¿Aún no suenan con la app cerrada? No la cierres deslizándola desde las apps recientes (en algunos teléfonos eso cancela sus alarmas).${oemTip}
         <button class="link-btn" id="appSettingsBtn" type="button">Abrir ajustes de la app</button></div>`;
@@ -400,8 +415,19 @@
     document.getElementById('testNotifBtn').onclick = async () => {
       if (!(await ensurePermission())) return;
       await LQ.native.notifications.test(60);
-      ui.showToast('Cierra la app: en 1 minuto llegará una notificación de prueba');
+      ui.showToast('Sal de la app y bloquea el teléfono: en 1 minuto sonará la prueba');
+      setTimeout(renderReminderTools, 500);
     };
+    document.getElementById('nowNotifBtn').onclick = async () => {
+      if (!(await ensurePermission())) return;
+      await LQ.native.notifications.notifyNow();
+      ui.showToast('Si no la ves ni la oyes, toca "Arreglar sonido y ventana"');
+      setTimeout(renderReminderTools, 800);
+    };
+    ['channelBtn', 'soundBtn'].forEach(id => {
+      const b = document.getElementById(id);
+      if (b) b.onclick = () => LQ.native.notifications.openChannelSettings();
+    });
   }
 
   function renderCatList(){
