@@ -1,7 +1,8 @@
 /*
  * Pestaña Social: perfil (nombre y foto), logros, ranking y clanes con su reto
- * semanal (modo en grupo). Perfil y logros funcionan sin conexión; ranking y
- * clanes necesitan la nube (Firebase) y haber iniciado sesión con Google.
+ * semanal (modo en grupo) y Familia (supervisión parental, ver familia.js).
+ * Perfil y logros funcionan sin conexión; ranking, clanes y Familia necesitan
+ * la nube (Firebase) y haber iniciado sesión con Google.
  */
 (function (LQ) {
   "use strict";
@@ -31,6 +32,7 @@
         ${seg('logros', '🏆', 'Logros')}
         ${seg('ranking', '📊', 'Ranking')}
         ${seg('clan', '🏰', 'Clan')}
+        ${seg('familia', '👨‍👩‍👧', 'Familia')}
       </div>
       <div id="socialSection"></div>`;
     el.querySelectorAll('[data-social-section]').forEach(b => {
@@ -40,6 +42,7 @@
     if (section === 'logros') renderAchievements(box);
     else if (section === 'ranking') renderRanking(box);
     else if (section === 'clan') renderClan(box);
+    else if (section === 'familia') ui.family.render(box);
     else renderProfile(box);
   }
 

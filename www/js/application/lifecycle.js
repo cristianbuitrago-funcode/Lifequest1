@@ -68,7 +68,7 @@
 
   // Logros: se revisan tras cada cambio y se celebran cuando no hay otra
   // ventana abierta (ni el tutorial ni otra celebración).
-  let achTimer = null, publishTimer = null;
+  let achTimer = null, publishTimer = null, familyTimer = null;
   function scheduleAchievements() {
     clearTimeout(achTimer);
     achTimer = setTimeout(async () => {
@@ -105,12 +105,20 @@
     publishTimer = setTimeout(() => LQ.ui.views.social.publishNow(), 5000);
   }
 
+  // Familia: el menor comparte su progreso con sus padres unos segundos después de cada cambio.
+  function scheduleFamily() {
+    if (!LQ.cloud.user || !LQ.Family.isChildMode(LQ.state.settings)) return;
+    clearTimeout(familyTimer);
+    familyTimer = setTimeout(() => LQ.ui.family.publishNow(), 5000);
+  }
+
   function bindExternalChanges() {
     LQ.store.subscribe(change => {
       if (!LQ.sync.applying) scheduleCloud();
       scheduleReminders();
       scheduleAchievements();
       schedulePublish();
+      scheduleFamily();
     });
 
     if (typeof BroadcastChannel !== "undefined") {
@@ -127,7 +135,7 @@
     }
 
     LQ.sync.onStatus((status, extra) => {
-      if (extra && extra.pulled) LQ.app.renderer.refreshFromState();
+      if (extra && extra.pulled) { LQ.app.renderer.refreshFromState(); LQ.ui.family.startWatch(); }
       if (isVisible("ajustes") && LQ.ui.views.ajustes.renderAccount) LQ.ui.views.ajustes.renderAccount();
     });
 
@@ -135,6 +143,8 @@
       if (isVisible("ajustes")) LQ.ui.views.ajustes.renderAccount();
       if (isVisible("social")) LQ.ui.views.social.render();
       schedulePublish();
+      LQ.ui.family.startWatch();
+      scheduleFamily();
     });
 
     window.addEventListener("online", () => LQ.sync.syncNow().catch(() => undefined));
@@ -210,6 +220,7 @@
     clearInterval(rolloverTimer);
     clearTimeout(achTimer);
     clearTimeout(publishTimer);
+    clearTimeout(familyTimer);
   }
 
   LQ.app = LQ.app || {};

@@ -5,7 +5,7 @@
 (function (LQ) {
   "use strict";
 
-  const APP_VERSION = '1.7.1';
+  const APP_VERSION = '1.8.0';
   const APP_OWNER = 'Cristian Camilo Buitrago Espinosa';
 
   const DEFAULT_CATEGORIES = [
@@ -44,6 +44,8 @@
     habitMonths: {},
     // Mapa de evolución: pilares elegidos (null = uno por categoría) y conteos a mano
     evolution: { pillars: null, manual: {} },
+    // Familia: modo menor (sin Finanzas), PIN de los adultos y padres vinculados
+    family: { childMode: false, pins: [], parents: [] },
     // Recompensa por registrar un pago (a tiempo / con retraso)
     billRewards: {
       onTime: {xp:15, coins:5},
@@ -155,6 +157,11 @@
     if (s.evolution && typeof s.evolution === 'object'){
       if (Array.isArray(s.evolution.pillars)) out.evolution.pillars = s.evolution.pillars.slice(0, 6).map(p => Object.assign({}, p));
       if (s.evolution.manual && typeof s.evolution.manual === 'object') out.evolution.manual = JSON.parse(JSON.stringify(s.evolution.manual));
+    }
+    if (s.family && typeof s.family === 'object'){
+      out.family.childMode = s.family.childMode === true;
+      if (Array.isArray(s.family.pins)) out.family.pins = s.family.pins.filter(p => p && p.salt && p.hash).slice(0, 6).map(p => ({ by: p.by || null, salt: String(p.salt), hash: String(p.hash) }));
+      if (Array.isArray(s.family.parents)) out.family.parents = s.family.parents.filter(p => p && p.uid).slice(0, 4).map(p => ({ uid: String(p.uid), name: String(p.name || '').slice(0, 30) }));
     }
     return out;
   }

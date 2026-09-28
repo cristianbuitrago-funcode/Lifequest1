@@ -5,7 +5,17 @@
     if (LQ.ui && typeof LQ.ui.renderCharacterCard === "function") LQ.ui.renderCharacterCard();
   }
 
+  /** Modo menor: sin pestaña de Finanzas (y fuera de ella si estaba abierta). */
+  function applyChildMode() {
+    const child = !!(LQ.Family && LQ.Family.isChildMode(LQ.state.settings));
+    document.body.classList.toggle("child-mode", child);
+    const tab = document.querySelector('.tab-btn[data-tab="finanzas"]');
+    if (tab) tab.hidden = child;
+    if (child && LQ.app.router.current() === "finanzas") LQ.app.router.activate("resumen", false);
+  }
+
   function renderEverything() {
+    applyChildMode();
     renderCharacter();
     const views = LQ.ui && LQ.ui.views;
     if (!views) return;
@@ -22,5 +32,5 @@
   }
 
   LQ.app = LQ.app || {};
-  LQ.app.renderer = { renderCharacter, renderEverything, refreshFromState };
+  LQ.app.renderer = { renderCharacter, renderEverything, refreshFromState, applyChildMode };
 })(globalThis.LifeQuest = globalThis.LifeQuest || {});

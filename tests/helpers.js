@@ -9,7 +9,7 @@ const CORE = [
   'js/domain/reminders.js', 'js/infrastructure/firestore-provider.js',
   'js/domain/finance-rules.js', 'js/domain/finance.js',
   'js/domain/shop-catalog.js', 'js/domain/shop.js',
-  'js/domain/achievements.js', 'js/domain/social.js', 'js/domain/decidia.js', 'js/domain/evolution.js'
+  'js/domain/achievements.js', 'js/domain/social.js', 'js/domain/decidia.js', 'js/domain/evolution.js', 'js/domain/family.js'
 ];
 
 function loadCore(){

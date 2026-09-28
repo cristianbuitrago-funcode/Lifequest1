@@ -34,6 +34,13 @@ dispositivo (IndexedDB) y se conservan entre sesiones.
   de hasta 30 personas con un **reto semanal en grupo**. Ranking y clanes
   necesitan la nube (Firebase) y una cuenta de Google; el perfil público es
   opcional y nunca incluye finanzas, misiones ni hábitos.
+- **Familia** 👨‍👩‍👧 (Social → Familia): un padre, madre o acudiente crea un
+  código con un PIN; el menor lo escribe en su app y queda vinculado. El adulto
+  ve su progreso (nivel, XP, racha, misiones y hábitos de hoy, rastreador del
+  mes, mapa de evolución, logros y actividad) además del suyo propio. En la app
+  del menor desaparece **Finanzas** (pestaña, avisos de pagos, categoría y
+  tutorial); para salir del modo menor, cerrar sesión o importar una copia se
+  necesita el PIN. También hay modo menor sin cuenta (solo con PIN).
 - **DECIDIA** 🧠 — "Convierte tus decisiones en escenarios": escribe qué estás
   pensando decidir y DECIDIA arma opciones con variables (dinero, precio,
   horas…) que puedes mover con deslizadores. Incluye **¿Y si…?** (cambios

@@ -4,7 +4,9 @@
   const routes = ["resumen", "misiones", "habitos", "finanzas", "tienda", "social", "decidia", "ajustes"];
   let active = "resumen";
 
-  function valid(name) { return routes.includes(name); }
+  // En modo menor (Familia) la pestaña Finanzas no existe.
+  function blocked(name) { return name === "finanzas" && LQ.Family && LQ.Family.isChildMode(LQ.state.settings); }
+  function valid(name) { return routes.includes(name) && !blocked(name); }
 
   function activate(name, render = true) {
     const next = valid(name) ? name : "resumen";

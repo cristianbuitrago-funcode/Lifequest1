@@ -91,6 +91,68 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.members == [me()];
     }
 
+    // ---------------------------------------------------------------------
+    // Familia (supervisión parental). El padre crea un código de un solo uso;
+    // el menor lo usa para crear los enlaces en ambos sentidos. Solo los padres
+    // vinculados leen el resumen de progreso del menor (nunca sus datos privados
+    // ni finanzas: esos siguen en users/{uid}, solo para su dueño).
+    // ---------------------------------------------------------------------
+    function isParentOf(child) {
+      return exists(/databases/$(database)/documents/families/$(child)/parents/$(me()));
+    }
+    // La invitación existe y la creó ese padre. Con get() (estado antes del
+    // lote) se puede consumir en la misma escritura que crea los enlaces.
+    function invitedBy(code, parentUid) {
+      return code is string && code.size() == 6
+        && get(/databases/$(database)/documents/familyInvites/$(code)).data.parentUid == parentUid;
+    }
+
+    match /familyInvites/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && code.size() == 6
+        && request.resource.data.keys().hasOnly(['parentUid', 'parentName', 'salt', 'pinHash', 'createdAt'])
+        && request.resource.data.parentUid == me()
+        && request.resource.data.parentName is string && request.resource.data.parentName.size() <= 30
+        && request.resource.data.salt is string && request.resource.data.salt.size() <= 32
+        && request.resource.data.pinHash is string && request.resource.data.pinHash.size() <= 16;
+      // La anula el padre, o la consume el menor al vincularse (en el mismo lote).
+      allow delete: if signedIn() && (resource.data.parentUid == me()
+        || existsAfter(/databases/$(database)/documents/families/$(me())/parents/$(resource.data.parentUid)));
+    }
+
+    match /families/{childUid} {
+      allow read: if signedIn() && (me() == childUid || isParentOf(childUid));
+      allow create, update: if signedIn() && me() == childUid
+        && request.resource.data.keys().hasOnly(['childName', 'updatedAt'])
+        && request.resource.data.childName is string && request.resource.data.childName.size() <= 30;
+      allow delete: if signedIn() && me() == childUid;
+
+      match /parents/{parentUid} {
+        allow read: if signedIn() && (me() == childUid || me() == parentUid);
+        allow create: if signedIn() && me() == childUid && parentUid != childUid
+          && request.resource.data.keys().hasOnly(['parentName', 'invite', 'since'])
+          && invitedBy(request.resource.data.invite, parentUid);
+        allow delete: if signedIn() && (me() == childUid || me() == parentUid);
+      }
+    }
+
+    match /parentLinks/{parentUid}/children/{childUid} {
+      allow read: if signedIn() && (me() == parentUid || me() == childUid);
+      allow create: if signedIn() && me() == childUid && parentUid != childUid
+        && request.resource.data.keys().hasOnly(['childName', 'invite', 'since'])
+        && request.resource.data.childName is string && request.resource.data.childName.size() <= 30
+        && invitedBy(request.resource.data.invite, parentUid);
+      allow delete: if signedIn() && (me() == parentUid || me() == childUid);
+    }
+
+    match /familyProgress/{childUid} {
+      allow read: if signedIn() && (me() == childUid || isParentOf(childUid));
+      allow create, update: if signedIn() && me() == childUid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 30
+        && (request.resource.data.photo == null || (request.resource.data.photo is string && request.resource.data.photo.size() <= 60000));
+      allow delete: if signedIn() && me() == childUid;
+    }
+
     match /clanCodes/{code} {
       allow get: if signedIn();
       allow create: if signedIn() && request.resource.data.keys().hasOnly(['clanId'])

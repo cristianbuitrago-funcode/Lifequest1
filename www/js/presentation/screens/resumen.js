@@ -104,7 +104,7 @@
       const opt = (val, label) => `<option value="${escapeHtml(val)}" ${val === v ? 'selected' : ''}>${escapeHtml(label)}</option>`;
       return opt('manual', '✍️ Lo cuento yo') +
         (state.habits.length ? `<optgroup label="Días de un hábito">${state.habits.map(h => opt('habit:' + h.id, '🔁 ' + h.title)).join('')}</optgroup>` : '') +
-        `<optgroup label="Misiones de una categoría">${state.settings.categories.map(c => opt('category:' + c.id, '⚔️ ' + c.name)).join('')}</optgroup>`;
+        `<optgroup label="Misiones de una categoría">${LQ.Family.visibleCategories(state.settings).map(c => opt('category:' + c.id, '⚔️ ' + c.name)).join('')}</optgroup>`;
     };
     ui.openModal('Tus pilares', (body, close) => {
       const draw = () => {

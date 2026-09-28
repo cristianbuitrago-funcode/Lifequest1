@@ -80,7 +80,8 @@
   // -------------------------------------------------------------------------
   /** Pilares propuestos cuando el usuario aún no ha elegido: uno por categoría. */
   function defaultPillars(settings){
-    return ((settings && settings.categories) || []).slice(0, MAX_PILLARS).map((c, i) => ({
+    const cats = LQ.Family ? LQ.Family.visibleCategories(settings) : ((settings && settings.categories) || []);
+    return cats.slice(0, MAX_PILLARS).map((c, i) => ({
       id: 'p-' + c.id, name: c.name, color: c.color || COLORS[i % COLORS.length],
       source: { type: 'category', id: c.id }, meta: 20
     }));
