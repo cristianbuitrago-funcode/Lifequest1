@@ -28,7 +28,11 @@ dispositivo (IndexedDB) y se conservan entre sesiones.
   **alarmas extra** a la hora que elijas y **avisos de pagos** (días antes y tres
   veces el día del vencimiento). Con "Alarmas puntuales" suenan a su hora aunque
   la app esté cerrada.
-- **Tutorial guiado** la primera vez (se repite desde Ajustes).
+- **Tutorial guiado** la primera vez (se repite desde Ajustes). En la bienvenida
+  eliges qué secciones usar: Misiones, Hábitos y Resumen siempre están;
+  Finanzas, Tienda, Social y DECIDIA se pueden ocultar (Ajustes → Secciones).
+- **Ayuda y errores** (Ajustes): la app guarda en el teléfono los últimos fallos
+  y el usuario decide si envía el informe; también "Enviar sugerencia".
 - **Social**: perfil con nombre y foto de la galería, **23 logros** con
   recompensa en monedas, **ranking** (semanal, global y del clan) y **clanes**
   de hasta 30 personas con un **reto semanal en grupo**. Ranking y clanes

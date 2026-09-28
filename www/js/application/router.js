@@ -4,8 +4,8 @@
   const routes = ["resumen", "misiones", "habitos", "finanzas", "tienda", "social", "decidia", "ajustes"];
   let active = "resumen";
 
-  // En modo menor (Familia) la pestaña Finanzas no existe.
-  function blocked(name) { return name === "finanzas" && LQ.Family && LQ.Family.isChildMode(LQ.state.settings); }
+  // Secciones ocultas (Ajustes → Secciones, o Finanzas en modo menor) no se abren.
+  function blocked(name) { return !!(LQ.Modules && !LQ.Modules.enabled(LQ.state.settings, name)); }
   function valid(name) { return routes.includes(name) && !blocked(name); }
 
   function activate(name, render = true) {

@@ -30,15 +30,15 @@
       const close = ui.openModal(title, (body, closeFn) => {
         body.innerHTML = `
           <div class="sub">${text}</div>
-          <input type="password" id="pin1" class="pin-input" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••" aria-label="PIN de 4 dígitos">
-          ${create ? '<input type="password" id="pin2" class="pin-input" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="Repite el PIN" aria-label="Repite el PIN">' : ''}
+          <input type="password" id="pin1" class="pin-input" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••" aria-label="PIN de 4 a 6 dígitos">
+          ${create ? '<input type="password" id="pin2" class="pin-input" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="Repite el PIN" aria-label="Repite el PIN">' : ''}
           <div class="pin-error" id="pinErr"></div>
           <div class="row" style="margin-top:12px"><button class="btn" id="pinOk">Aceptar</button></div>`;
         const p1 = body.querySelector('#pin1'), p2 = body.querySelector('#pin2'), err = body.querySelector('#pinErr');
         setTimeout(() => p1.focus(), 50);
         const ok = () => {
           const v = p1.value.trim();
-          if (!F.validPin(v)){ err.textContent = 'El PIN son 4 números.'; return; }
+          if (!F.validPin(v)){ err.textContent = 'El PIN son de 4 a 6 números.'; return; }
           if (create && p2.value.trim() !== v){ err.textContent = 'Los PIN no coinciden.'; return; }
           finish(v); closeFn();
         };
@@ -54,13 +54,28 @@
     });
   }
 
+  // Intentos fallidos (en este teléfono): tras varios seguidos, espera creciente.
+  const FAILS_KEY = 'lifecoinquest:pinFails';
+  function fails(){ try{ return JSON.parse(localStorage.getItem(FAILS_KEY)) || { n: 0, at: 0 }; }catch(e){ return { n: 0, at: 0 }; } }
+  function saveFails(f){ try{ localStorage.setItem(FAILS_KEY, JSON.stringify(f)); }catch(e){ /* sin almacenamiento */ } }
+  function lockedMs(){ const f = fails(); return Math.max(0, f.at + F.lockFor(f.n) - Date.now()); }
+
   /** En modo menor pide el PIN de un adulto; fuera de él deja pasar. */
   async function requirePin(what){
     if (!F.isChildMode(state.settings)) return true;
+    const wait = lockedMs();
+    if (wait > 0){
+      ui.showToast('Demasiados intentos. Espera ' + Math.ceil(wait / 60000) + ' min.');
+      return false;
+    }
     const pin = await askPin('PIN de un adulto', 'Para ' + escapeHtml(what) + ' se necesita el PIN de tu padre, madre o acudiente.');
     if (pin == null) return false;
-    if (F.checkPin(state.settings, pin)) return true;
-    ui.showToast('PIN incorrecto');
+    if (F.checkPin(state.settings, pin)){ saveFails({ n: 0, at: 0 }); return true; }
+    const f = fails();
+    f.n += 1; f.at = Date.now();
+    saveFails(f);
+    const left = F.FREE_TRIES - f.n;
+    ui.showToast(left > 0 ? 'PIN incorrecto. Te quedan ' + left + ' intentos.' : 'PIN incorrecto. Espera ' + Math.ceil(F.lockFor(f.n) / 60000) + ' min para volver a intentarlo.');
     return false;
   }
 
@@ -221,7 +236,7 @@
   }
 
   async function createInvite(){
-    const pin = await askPin('PIN para el modo menor', 'Elige un PIN de 4 números. Lo necesitará el menor para salir del modo menor o cerrar sesión. No se lo digas.', true);
+    const pin = await askPin('PIN para el modo menor', 'Elige un PIN de 4 a 6 números (mejor 6). Lo necesitará el menor para salir del modo menor o cerrar sesión. No se lo digas.', true);
     if (pin == null) return;
     const parentName = LQ.Social.cleanName(state.profile.displayName) || (LQ.cloud.user && LQ.cloud.user.name) || 'Tu padre/madre';
     try{
@@ -286,7 +301,7 @@
   }
 
   async function activateLocal(){
-    const pin = await askPin('PIN del adulto', 'Un adulto elige un PIN de 4 números. Se pedirá para salir del modo menor.', true);
+    const pin = await askPin('PIN del adulto', 'Un adulto elige un PIN de 4 a 6 números (mejor 6). Se pedirá para salir del modo menor.', true);
     if (pin == null) return;
     const f = fset();
     f.childMode = true;

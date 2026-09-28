@@ -5,13 +5,17 @@
     if (LQ.ui && typeof LQ.ui.renderCharacterCard === "function") LQ.ui.renderCharacterCard();
   }
 
-  /** Modo menor: sin pestaña de Finanzas (y fuera de ella si estaba abierta). */
+  /**
+   * Secciones visibles: oculta las pestañas apagadas (Ajustes → Secciones, o
+   * Finanzas en modo menor) y sale de la actual si quedó oculta.
+   */
   function applyChildMode() {
-    const child = !!(LQ.Family && LQ.Family.isChildMode(LQ.state.settings));
-    document.body.classList.toggle("child-mode", child);
-    const tab = document.querySelector('.tab-btn[data-tab="finanzas"]');
-    if (tab) tab.hidden = child;
-    if (child && LQ.app.router.current() === "finanzas") LQ.app.router.activate("resumen", false);
+    const settings = LQ.state.settings;
+    document.body.classList.toggle("child-mode", !!(LQ.Family && LQ.Family.isChildMode(settings)));
+    document.querySelectorAll(".tab-btn[data-tab]").forEach(tab => {
+      tab.hidden = !LQ.Modules.enabled(settings, tab.dataset.tab);
+    });
+    if (!LQ.Modules.enabled(settings, LQ.app.router.current())) LQ.app.router.activate("resumen", false);
   }
 
   function renderEverything() {

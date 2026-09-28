@@ -50,7 +50,11 @@
   function activeExtras(cfg){ return (cfg.extra || []).filter(x => x && x.enabled).slice(0, MAX_EXTRA); }
   function billsEnabled(cfg){ return !cfg.bills || cfg.bills.enabled !== false; }
   // Modo menor (Familia): no hay Finanzas, así que tampoco avisos de pagos.
-  function childMode(state){ return !!(state.settings && state.settings.family && state.settings.family.childMode); }
+  // …ni cuando el usuario ocultó Finanzas (Ajustes → Secciones).
+  function childMode(state){
+    const s = state.settings || {};
+    return !!((s.family && s.family.childMode) || (s.modules && s.modules.finanzas === false));
+  }
 
   /** true si hay algún recordatorio que programar (para no pedir permisos en vano). */
   function wanted(state){

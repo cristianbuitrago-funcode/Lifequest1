@@ -82,3 +82,13 @@ test('modo menor: sin la categoría Finanzas en misiones ni en el mapa de evoluc
   assert.ok(!ids(LQ.Family.visibleCategories(LQ.state.settings)).includes('finanzas'));
   assert.ok(![...LQ.Evolution.defaultPillars(LQ.state.settings)].some(p => p.source.id === 'finanzas'));
 });
+
+test('PIN: de 4 a 6 dígitos y bloqueo creciente tras 5 fallos', async () => {
+  const { Family: F } = await app();
+  assert.equal(F.validPin('123456'), true);
+  assert.equal(F.validPin('1234567'), false);
+  assert.equal(F.lockFor(4), 0);
+  assert.equal(F.lockFor(5), 60000);
+  assert.equal(F.lockFor(6), 120000);
+  assert.equal(F.lockFor(20), 30 * 60000, 'máximo 30 minutos');
+});

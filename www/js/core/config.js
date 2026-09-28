@@ -5,8 +5,10 @@
 (function (LQ) {
   "use strict";
 
-  const APP_VERSION = '1.8.0';
+  const APP_VERSION = '1.9.0';
   const APP_OWNER = 'Cristian Camilo Buitrago Espinosa';
+  // Contacto público (el mismo de la política de privacidad y los términos).
+  const APP_CONTACT = 'buitragocristianespinosa@gmail.com';
 
   const DEFAULT_CATEGORIES = [
     {id:'salud', name:'Salud', color:'#1a8f63'},
@@ -44,6 +46,8 @@
     habitMonths: {},
     // Mapa de evolución: pilares elegidos (null = uno por categoría) y conteos a mano
     evolution: { pillars: null, manual: {} },
+    // Secciones opcionales visibles (ver domain/modules.js)
+    modules: { finanzas: true, tienda: true, social: true, decidia: true },
     // Familia: modo menor (sin Finanzas), PIN de los adultos y padres vinculados
     family: { childMode: false, pins: [], parents: [] },
     // Recompensa por registrar un pago (a tiempo / con retraso)
@@ -158,6 +162,9 @@
       if (Array.isArray(s.evolution.pillars)) out.evolution.pillars = s.evolution.pillars.slice(0, 6).map(p => Object.assign({}, p));
       if (s.evolution.manual && typeof s.evolution.manual === 'object') out.evolution.manual = JSON.parse(JSON.stringify(s.evolution.manual));
     }
+    if (s.modules && typeof s.modules === 'object'){
+      Object.keys(out.modules).forEach(k => { if (typeof s.modules[k] === 'boolean') out.modules[k] = s.modules[k]; });
+    }
     if (s.family && typeof s.family === 'object'){
       out.family.childMode = s.family.childMode === true;
       if (Array.isArray(s.family.pins)) out.family.pins = s.family.pins.filter(p => p && p.salt && p.hash).slice(0, 6).map(p => ({ by: p.by || null, salt: String(p.salt), hash: String(p.hash) }));
@@ -167,7 +174,7 @@
   }
 
   LQ.config = {
-    APP_VERSION, APP_OWNER,
+    APP_VERSION, APP_OWNER, APP_CONTACT,
     DEFAULT_CATEGORIES, DEFAULT_SETTINGS, DEFAULT_CHARACTER, HABIT_LADDER, DIFF_LABELS, SAMPLE_QUESTS,
     BILL_FREQUENCIES, BILL_STATUS_LABELS, DEFAULT_PROFILE,
     defaultSettings, mergeSettings, defaultProfile, mergeProfile
