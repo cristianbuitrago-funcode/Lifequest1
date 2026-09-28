@@ -17,8 +17,13 @@ dispositivo (IndexedDB) y se conservan entre sesiones.
 ## Qué incluye
 
 - **Misiones** diarias y únicas con XP, monedas y castigo por incumplimiento.
-- **Hábitos** con racha, escalera de recompensas y una **rueda de constancia**
-  (porcentaje de días cumplidos de cada hábito en los últimos 30 días).
+- **Hábitos** con racha y monedas por constancia, y un **rastreador del mes**:
+  cuadrícula hábito × día, gráfico de hábitos hechos por día, **escalera de
+  recompensas** (cada hábito cumplido = 1 bloque; en los marcos 20, 40 y 60
+  cobras el premio que tú elegiste) y reflexión del mes.
+- **Mapa de evolución** (Resumen): hasta 6 pilares de tu vida con color, meta
+  mensual, lo hecho y un nivel de 1 a 10 en una rueda. Lo hecho se llena solo
+  desde un hábito o una categoría de misiones, o lo cuentas tú.
 - **Recordatorios** (app Android): resumen de la mañana, aviso de pendientes,
   **alarmas extra** a la hora que elijas y **avisos de pagos** (días antes y tres
   veces el día del vencimiento). Con "Alarmas puntuales" suenan a su hora aunque
