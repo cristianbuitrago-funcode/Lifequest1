@@ -40,12 +40,12 @@
       plugin('SystemBars').setStyle({ style }).catch(e => console.warn('SystemBars', e));
     },
 
-    async shareFile(filename, text){
+    async shareFile(filename, text, dialogTitle){
       const { uri } = await plugin('Filesystem').writeFile({
         path: filename, data: text, directory: 'CACHE', encoding: 'utf8'
       });
       try{
-        await plugin('Share').share({ title: filename, files: [uri], dialogTitle: 'Guardar copia de LifeCoinQuest' });
+        await plugin('Share').share({ title: filename, files: [uri], dialogTitle: dialogTitle || 'Guardar copia de LifeCoinQuest' });
       }catch(e){
         // Cerrar el menú de compartir sin elegir destino no es un error.
         if (!/cancel/i.test(String(e && e.message))) throw e;

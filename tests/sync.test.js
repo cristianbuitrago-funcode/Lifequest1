@@ -5,7 +5,10 @@ const { loadCore } = require('./helpers');
 // Servidor en memoria con reloj propio: imita el cursor por `syncedAt` de Firestore.
 const LQCOLS = loadCore().storage.COLLECTIONS.slice();
 
-function createFakeServer(){
+// `live: true` imita la escucha en tiempo real (meta/clock): solo la usa la
+// prueba de sincronización automática, para que las demás no tengan carreras.
+function createFakeServer(opts){
+  const live = !!(opts && opts.live);
   const data = { docs: new Map(), tombstones: new Map() };
   let clock = 1000;
   let writes = 0;
@@ -19,7 +22,7 @@ function createFakeServer(){
       const self = {};
       return {
         name: 'fake', uid,
-        watch(fn){ const w = { fn, self }; watchers.add(w); return () => watchers.delete(w); },
+        watch: live ? function(fn){ const w = { fn, self }; watchers.add(w); return () => watchers.delete(w); } : undefined,
         async pull(cursor){
           const since = cursor || 0;
           let max = cursor || 0;
@@ -154,7 +157,7 @@ test('sin proveedor, syncNow no hace nada', async () => {
 });
 
 test('sincronización automática: los cambios de un dispositivo llegan al otro sin pulsar nada', async () => {
-  const server = createFakeServer();
+  const server = createFakeServer({ live: true });
   const A = await device(server);
   await A.sync.syncNow();
   const B = await device(server);

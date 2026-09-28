@@ -9,8 +9,8 @@
 
   // tab: pestaña que se abre antes del paso · target: selector a resaltar (opcional)
   const STEPS = [
-    { title: '¡Bienvenido a LifeCoinQuest! ⚔️',
-      text: 'Convierte tus tareas en un juego: cumple misiones y gana XP y monedas. Te lo muestro en 1 minuto.' },
+    { title: '¡Bienvenido a LifeCoinQuest! ⚔️', pick: true,
+      text: 'Convierte tus tareas en un juego: cumple misiones y gana XP y monedas. Misiones, Hábitos y Resumen siempre están; elige qué más quieres usar (puedes cambiarlo en Ajustes):' },
     { tab: 'resumen', target: '#charCard', title: 'Tu personaje',
       text: 'Tu nivel, tus monedas 🪙 y tu racha 🔥. Todo sube al cumplir lo que te propones.' },
     { tab: 'misiones', target: '#view-misiones .panel', title: 'Crea misiones',
@@ -79,7 +79,8 @@
   }
 
   // En modo menor (Familia) no existe Finanzas: esos pasos se saltan.
-  function hiddenStep(step){ return step.tab === 'finanzas' && LQ.Family && LQ.Family.isChildMode(LQ.state.settings); }
+  // Tampoco los de secciones que el usuario ocultó.
+  function hiddenStep(step){ return !!(step.tab && LQ.Modules && !LQ.Modules.enabled(LQ.state.settings, step.tab)); }
 
   function show(i, dir){
     while (STEPS[i] && hiddenStep(STEPS[i])) i += dir || 1;
@@ -92,14 +93,19 @@
       <div class="tour-dots" aria-hidden="true">${STEPS.map((st, k) => hiddenStep(st) ? '' : `<span class="${k === i ? 'on' : ''}"></span>`).join('')}</div>
       <h3>${step.title}</h3>
       <p>${step.text}</p>
+      ${step.pick ? ui.modulePicker() : ''}
       <div class="tour-actions">
         ${last ? '' : '<button class="btn ghost small" data-skip>Saltar</button>'}
         ${i > 0 && !last ? '<button class="btn ghost small" data-prev>Atrás</button>' : ''}
         <button class="btn small" data-next>${last ? '¡Empezar!' : i === 0 ? 'Empezar el recorrido' : 'Siguiente'}</button>
       </div>`;
     const card = root.querySelector('.tour-card');
-    card.querySelector('[data-next]').onclick = () => (last ? finish() : show(i + 1));
-    const skip = card.querySelector('[data-skip]'); if (skip) skip.onclick = finish;
+    card.querySelector('[data-next]').onclick = async () => {
+      if (step.pick) await ui.saveModulePicker(card);
+      last ? finish() : show(i + 1);
+    };
+    const skip = card.querySelector('[data-skip]');
+    if (skip) skip.onclick = async () => { if (step.pick) await ui.saveModulePicker(card); finish(); };
     const prev = card.querySelector('[data-prev]'); if (prev) prev.onclick = () => show(i - 1, -1);
 
     // Espera a que la pestaña se dibuje, lleva el elemento a la vista y lo resalta.

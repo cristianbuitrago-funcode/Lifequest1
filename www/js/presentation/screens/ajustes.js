@@ -19,6 +19,11 @@
     const s = state.settings;
     el.innerHTML = `
       <div class="panel" id="accountPanel"></div>
+      <div class="panel" id="modulesPanel">
+        <h2>Secciones de la app</h2>
+        <div class="sub">Misiones, Hábitos y Resumen siempre están. Oculta lo que no uses para que la app sea más sencilla; tus datos no se borran.</div>
+        ${ui.modulePicker()}
+      </div>
       <div class="panel">
         <h2>Categorías (pilares)</h2>
         <div class="sub">Se usan en misiones, hábitos y finanzas</div>
@@ -51,6 +56,7 @@
         `}
       </div>
       <button class="btn" id="saveSettingsBtn">Guardar ajustes</button>
+      <div class="panel" id="helpPanel"></div>
       <div class="panel" style="margin-top:14px;">
         <h2>Copia de seguridad</h2>
         <div class="sub">Tus datos se guardan solo en este dispositivo. Exporta una copia para no perderlos si ${LQ.native.isNative ? 'desinstalas la app o borras sus datos' : 'borras los datos del navegador'}, o para pasarlos a otro equipo.</div>
@@ -78,6 +84,13 @@
     renderAccount();
     renderCatList();
     renderRewardGrid();
+    renderHelp();
+    const modulesPanel = document.getElementById('modulesPanel');
+    modulesPanel.querySelectorAll('[data-module]').forEach(inp => inp.onchange = async () => {
+      await ui.saveModulePicker(modulesPanel);
+      await ui.syncReminders();
+      ui.showToast(inp.checked ? 'Sección visible' : 'Sección oculta (tus datos se conservan)');
+    });
     document.getElementById('addCatBtn').onclick = () => {
       s.categories.push({id:'cat'+uid(), name:'Nueva categoría', color:'#6d4aff'});
       renderCatList();
@@ -460,6 +473,42 @@
         </div>
       </div>
     `).join('');
+  }
+
+  // -------------------------------------------------------------------------
+  // Ayuda y errores: el usuario decide si comparte el informe (nada se envía solo)
+  // -------------------------------------------------------------------------
+  function renderHelp(){
+    const box = document.getElementById('helpPanel');
+    if (!box) return;
+    const n = LQ.errors.count();
+    box.innerHTML = `
+      <h2>Ayuda y errores</h2>
+      <div class="sub">${n
+        ? 'La app anotó <b>' + n + '</b> ' + (n === 1 ? 'error' : 'errores') + ' en este teléfono. Si algo falló, envía el informe: solo contiene los errores, la versión y el modelo del teléfono (nada de tus misiones ni finanzas).'
+        : 'No hay errores registrados. Si algo no funciona como esperas o tienes una idea, cuéntanos.'}</div>
+      <div class="backup-actions">
+        <button class="btn ghost small" id="ideaBtn">💡 Enviar sugerencia</button>
+        ${n ? '<button class="btn ghost small" id="reportBtn">📤 Enviar informe de errores</button><button class="btn ghost small" id="clearErrBtn">Borrar registro</button>' : ''}
+      </div>`;
+    document.getElementById('ideaBtn').onclick = () => {
+      const subject = encodeURIComponent('Sugerencia LifeCoinQuest ' + LQ.config.APP_VERSION);
+      window.location.href = 'mailto:' + LQ.config.APP_CONTACT + '?subject=' + subject;
+    };
+    const rep = document.getElementById('reportBtn');
+    if (rep) rep.onclick = async () => {
+      const text = LQ.errors.report();
+      const filename = 'lifecoinquest-errores-' + todayStr() + '.txt';
+      try{
+        if (LQ.native.isNative){ await LQ.native.shareFile(filename, text, 'Enviar informe de errores'); return; }
+        const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+        const a = document.createElement('a'); a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }catch(e){ ui.showToast('No se pudo compartir el informe'); }
+    };
+    const clr = document.getElementById('clearErrBtn');
+    if (clr) clr.onclick = () => { LQ.errors.clear(); renderHelp(); ui.showToast('Registro borrado'); };
   }
 
   async function exportBackup(){

@@ -12,6 +12,7 @@
     "android:open": "cap open android",
     "android:run": "npm run android:sync && cap run android",
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug",
+    "android:bundle": "npm run android:sync && cd android && ./gradlew bundleRelease",
     "test:cloud": "npx -y firebase-tools emulators:exec --only auth,firestore --project demo-lifequest 'node --test tests/cloud/*.test.js'"
   },
   "dependencies": {

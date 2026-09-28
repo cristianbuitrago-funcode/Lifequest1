@@ -25,10 +25,21 @@ La marca protege el **nombre y el logo** (el derecho de autor no protege nombres
 
 1. **Cuenta de desarrollador** en play.google.com/console, con pago único y
    verificación de identidad, a nombre de Cristian Camilo Buitrago Espinosa.
-2. **Build de producción**: Google Play pide un **AAB firmado con una clave de
-   subida** (no la clave de depuración actual). Hay que crear esa clave,
-   guardarla en un lugar seguro con copia de respaldo y compilar con
-   `./gradlew bundleRelease`. Pídele a Claude que lo configure.
+2. **Build de producción (AAB)**: Google Play pide un **AAB firmado con una
+   clave de subida** (no la de depuración de los APK de prueba). Ya está
+   configurado en `android/app/build.gradle`:
+   - Crear la clave una sola vez: `bash tools/create-upload-key.sh ~/lifecoinquest-upload.jks`
+     (o pídele a Claude que la genere). Guarda el archivo `.jks` y su contraseña
+     en un lugar seguro **con copia**; nunca en el repositorio (`.gitignore` ya
+     lo impide).
+   - Compilar:
+     ```bash
+     export LIFEQUEST_UPLOAD_KEYSTORE=~/lifecoinquest-upload.jks
+     export LIFEQUEST_UPLOAD_STORE_PASSWORD='tu-contraseña'
+     npm run android:bundle
+     # → android/app/build/outputs/bundle/release/app-release.aab
+     ```
+   - Sube a `versionCode` en `android/app/build.gradle` antes de cada envío.
 3. **Firebase + Play App Signing**: Google vuelve a firmar la app con su propia
    clave. Añade el SHA-1 de la **clave de firma de la app** (Play Console →
    Integridad de la app) en Firebase → Configuración → Android, y vuelve a

@@ -31,11 +31,21 @@
   }
 
   // -------------------------------------------------------------------------
-  // PIN de 4 dígitos. No es criptografía fuerte (son 10.000 combinaciones):
-  // solo evita guardarlo en texto claro. La seguridad real de los datos la dan
-  // las reglas de Firestore.
+  // PIN de 4 a 6 dígitos. No es criptografía fuerte: evita guardarlo en texto
+  // claro y, con el bloqueo tras varios intentos fallidos (lockFor), dificulta
+  // adivinarlo. La seguridad real de los datos la dan las reglas de Firestore.
   // -------------------------------------------------------------------------
-  function validPin(pin){ return /^\d{4}$/.test(String(pin || '')); }
+  function validPin(pin){ return /^\d{4,6}$/.test(String(pin || '')); }
+
+  /**
+   * Bloqueo tras fallos seguidos: con 5 fallos, 1 minuto; cada fallo más
+   * duplica la espera (máximo 30 minutos). Devuelve milisegundos de bloqueo.
+   */
+  const FREE_TRIES = 5;
+  function lockFor(fails){
+    if (fails < FREE_TRIES) return 0;
+    return Math.min(30 * 60000, 60000 * Math.pow(2, fails - FREE_TRIES));
+  }
 
   function hashPin(pin, salt){
     let h = 0x811c9dc5;
@@ -135,5 +145,5 @@
     };
   }
 
-  LQ.Family = { MAX_PARENTS, INVITE_DAYS, defaults, of, isChildMode, visibleCategories, validPin, hashPin, makePin, checkPin, inviteFresh, buildProgress, todaySummary };
+  LQ.Family = { MAX_PARENTS, INVITE_DAYS, FREE_TRIES, defaults, of, isChildMode, visibleCategories, validPin, lockFor, hashPin, makePin, checkPin, inviteFresh, buildProgress, todaySummary };
 })(globalThis.LifeQuest = globalThis.LifeQuest || {});
