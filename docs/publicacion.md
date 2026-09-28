@@ -48,10 +48,19 @@ La marca protege el **nombre y el logo** (el derecho de autor no protege nombres
      (misiones, hábitos). Finalidad: funcionalidad de la app (sincronización).
    - No se comparten con terceros para publicidad ni se venden.
    - Cifrados en tránsito (HTTPS). El usuario puede solicitar su eliminación.
-7. **Ficha de la tienda**: icono de 512×512 (`www/img/logo-512.png`), gráfico
+7. **Permisos de alarmas y batería**: la app declara `USE_EXACT_ALARM` para que
+   los recordatorios suenen a su hora sin que el usuario active nada. Google
+   Play solo lo acepta en apps cuya función principal son alarmas o
+   recordatorios, y lo pregunta en la *Declaración de permisos*. Responde que
+   LifeCoinQuest avisa de misiones, hábitos y pagos a la hora que elige el
+   usuario. Si Google lo rechazara, se quita esa línea del `AndroidManifest.xml`
+   y la app vuelve a pedir "Alarmas y recordatorios" desde Ajustes. Lo mismo
+   aplica a `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` (diálogo "Permitir en segundo
+   plano"), aceptado para apps que necesitan avisar a tiempo.
+8. **Ficha de la tienda**: icono de 512×512 (`www/img/logo-512.png`), gráfico
    destacado de 1024×500, al menos 2 capturas del teléfono, descripción corta y
    larga, categoría (Productividad) y clasificación de contenido.
-8. Empieza con una **prueba interna o cerrada** antes de la producción (las
+9. Empieza con una **prueba interna o cerrada** antes de la producción (las
    cuentas personales nuevas deben hacer una prueba cerrada con testers antes de
    publicar).
 

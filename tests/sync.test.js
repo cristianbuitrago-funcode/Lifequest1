@@ -9,14 +9,17 @@ function createFakeServer(){
   const data = { docs: new Map(), tombstones: new Map() };
   let clock = 1000;
   let writes = 0;
+  const watchers = new Set();
   const table = (name) => data[name] || (data[name] = new Map());
   const copy = (o) => JSON.parse(JSON.stringify(o));
   return {
     get writes(){ return writes; },
     count(name){ return table(name).size; },
     provider(uid){
+      const self = {};
       return {
         name: 'fake', uid,
+        watch(fn){ const w = { fn, self }; watchers.add(w); return () => watchers.delete(w); },
         async pull(cursor){
           const since = cursor || 0;
           let max = cursor || 0;
@@ -35,6 +38,8 @@ function createFakeServer(){
           Object.entries(changes.docs).forEach(([k, d]) => put('docs', k, d));
           Object.entries(changes.records).forEach(([c, list]) => list.forEach(r => put(c, r.id, r)));
           changes.tombstones.forEach(t => { put('tombstones', t.key, t); table(t.collection).delete(t.id); });
+          // Como el "reloj" de Firestore: avisa a los OTROS dispositivos.
+          watchers.forEach(w => { if (w.self !== self) setTimeout(w.fn, 0); });
         }
       };
     }
@@ -146,4 +151,25 @@ test('gana el cambio más reciente en conflictos', async () => {
 test('sin proveedor, syncNow no hace nada', async () => {
   const A = await device(null);
   assert.equal(await A.sync.syncNow(), null);
+});
+
+test('sincronización automática: los cambios de un dispositivo llegan al otro sin pulsar nada', async () => {
+  const server = createFakeServer();
+  const A = await device(server);
+  await A.sync.syncNow();
+  const B = await device(server);
+  await B.sync.syncNow();
+
+  await tick();
+  await A.store.addHabit({ title: 'Leer 10 minutos' });
+  await A.sync.syncNow();                // A sube (en la app esto ocurre solo, 1 s después del cambio)
+  for (let i = 0; i < 50 && !B.state.habits.some(h => h.title === 'Leer 10 minutos'); i++) await tick();
+  assert.ok(B.state.habits.some(h => h.title === 'Leer 10 minutos'), 'B recibe el hábito sin llamar a syncNow');
+
+  // Al cerrar sesión deja de escuchar.
+  B.sync.unregister();
+  await A.store.addHabit({ title: 'Correr' });
+  await A.sync.syncNow();
+  await tick(); await tick();
+  assert.ok(!B.state.habits.some(h => h.title === 'Correr'));
 });

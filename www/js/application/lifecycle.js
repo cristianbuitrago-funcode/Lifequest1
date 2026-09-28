@@ -35,7 +35,15 @@
   function scheduleCloud() {
     if (!LQ.sync.enabled) return;
     clearTimeout(cloudTimer);
-    cloudTimer = setTimeout(() => LQ.sync.syncNow().catch(() => undefined), 2000);
+    cloudTimer = setTimeout(() => { cloudTimer = null; LQ.sync.syncNow().catch(() => undefined); }, 1000);
+  }
+
+  /** Sube de inmediato lo pendiente (p. ej. al salir de la app, antes de que Android la cierre). */
+  function flushCloud() {
+    if (!LQ.sync.enabled || !cloudTimer) return;
+    clearTimeout(cloudTimer);
+    cloudTimer = null;
+    LQ.sync.syncNow().catch(() => undefined);
   }
 
   function scheduleReminders() {
@@ -131,7 +139,8 @@
 
     window.addEventListener("online", () => LQ.sync.syncNow().catch(() => undefined));
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) checkDay();
+      if (document.hidden) flushCloud();
+      else checkDay();
     });
   }
 
@@ -170,6 +179,8 @@
         return true;
       },
       onResume: async () => {
+        // Al volver de un ajuste de Android (batería, alarmas) se refresca su estado.
+        if (isVisible("ajustes")) LQ.ui.views.ajustes.render();
         await syncBeforeRules();
         await checkDay();
         scheduleReminders();

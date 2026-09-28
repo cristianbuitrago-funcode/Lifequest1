@@ -5,7 +5,7 @@
 (function (LQ) {
   "use strict";
 
-  const APP_VERSION = '1.6.1';
+  const APP_VERSION = '1.6.2';
   const APP_OWNER = 'Cristian Camilo Buitrago Espinosa';
 
   const DEFAULT_CATEGORIES = [

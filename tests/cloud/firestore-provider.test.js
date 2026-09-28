@@ -38,6 +38,22 @@ async function device(conn){
   return LQ;
 }
 
+test('los cambios de otro dispositivo llegan solos (escucha en tiempo real)', async () => {
+  const run = 'w' + Date.now().toString(36);
+  const c1 = await connect('a' + run, 'user-' + run);
+  const c2 = await connect('b' + run, 'user-' + run);
+  const A = await device(c1);
+  const B = await device(c2);
+  await A.sync.syncNow();
+  await B.sync.syncNow();
+
+  await A.store.addHabit({ title: 'Estudiar' });
+  await A.sync.syncNow();
+  for (let i = 0; i < 100 && !B.state.habits.some(h => h.title === 'Estudiar'); i++) await new Promise(r => setTimeout(r, 50));
+  assert.ok(B.state.habits.some(h => h.title === 'Estudiar'), 'B lo recibe sin llamar a syncNow');
+  A.sync.unregister(); B.sync.unregister();
+});
+
 test.after(() => Promise.all(open.map(app => app.delete())));
 
 test('dos dispositivos sincronizan a través de Firestore', async () => {
