@@ -32,7 +32,7 @@
   ui.catById = (id) => (state.settings.categories||[]).find(c=>c.id===id);
   ui.catName = (id) => { const c = ui.catById(id); return c ? c.name : '—'; };
   ui.catColor = (id) => { const c = ui.catById(id); return c ? c.color : '#8890b0'; };
-  ui.categoryOptions = () => state.settings.categories.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
+  ui.categoryOptions = () => LQ.Family.visibleCategories(state.settings).map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
 
   // Fachada de compatibilidad para las vistas existentes.
   // La arquitectura real sigue viviendo en LQ.app.*; estos alias solo

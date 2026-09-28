@@ -114,7 +114,10 @@
     }
     document.getElementById('tourBtn').onclick = () => ui.tour.start();
     document.getElementById('exportBtn').onclick = exportBackup;
-    document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+    document.getElementById('importBtn').onclick = async () => {
+      // En modo menor, una copia podría traer de vuelta Finanzas: pide el PIN del adulto.
+      if (await ui.family.requirePin('importar una copia de seguridad')) document.getElementById('importFile').click();
+    };
     document.getElementById('importFile').onchange = (e) => importBackup(e.target);
   }
 
@@ -189,6 +192,7 @@
     };
     const del = document.getElementById('deleteAccountBtn');
     if (del) del.onclick = async () => {
+      if (!(await ui.family.requirePin('eliminar la cuenta'))) return;
       const ok = confirm('Se eliminarán tu cuenta de LifeCoinQuest y TODOS tus datos guardados en la nube. ' +
         'Los datos de este dispositivo se conservan. Esta acción no se puede deshacer. ¿Continuar?');
       if (!ok) return;
@@ -206,6 +210,7 @@
     };
     const signOut = document.getElementById('signOutBtn');
     if (signOut) signOut.onclick = async () => {
+      if (!(await ui.family.requirePin('cerrar sesión'))) return;
       if (!confirm('¿Cerrar sesión? Tus datos se quedan en este dispositivo y en la nube.')) return;
       await cloud.signOut();
       ui.showToast('Sesión cerrada');

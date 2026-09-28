@@ -49,12 +49,14 @@
   function cfgOf(state){ return (state.settings && state.settings.reminders) || {}; }
   function activeExtras(cfg){ return (cfg.extra || []).filter(x => x && x.enabled).slice(0, MAX_EXTRA); }
   function billsEnabled(cfg){ return !cfg.bills || cfg.bills.enabled !== false; }
+  // Modo menor (Familia): no hay Finanzas, así que tampoco avisos de pagos.
+  function childMode(state){ return !!(state.settings && state.settings.family && state.settings.family.childMode); }
 
   /** true si hay algún recordatorio que programar (para no pedir permisos en vano). */
   function wanted(state){
     const cfg = cfgOf(state);
     if ((cfg.morning || {}).enabled || (cfg.evening || {}).enabled || activeExtras(cfg).length) return true;
-    return billsEnabled(cfg) && (state.bills || []).some(b => isLive(b) && b.dueDate && !(b.paidAt && !isRecurringBill(b)));
+    return billsEnabled(cfg) && !childMode(state) && (state.bills || []).some(b => isLive(b) && b.dueDate && !(b.paidAt && !isRecurringBill(b)));
   }
   function isLive(b){ return b && b.active !== false && !b.deleted; }
   function isRecurringBill(b){ return !!(LQ.FinanceRules && LQ.FinanceRules.isRecurring(b)); }
@@ -134,7 +136,7 @@
   // -------------------------------------------------------------------------
   function planBills(state, now, days, out){
     const cfg = cfgOf(state);
-    if (!billsEnabled(cfg) || !LQ.FinanceRules) return;
+    if (!billsEnabled(cfg) || childMode(state) || !LQ.FinanceRules) return;
     const b = Object.assign({ daysBefore: 3, beforeTime: '09:00', dueTimes: ['08:00', '13:00', '19:00'] }, cfg.bills || {});
     const FR = LQ.FinanceRules;
     const today = fmtDate(now);

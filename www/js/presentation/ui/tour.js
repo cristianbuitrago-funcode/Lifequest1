@@ -26,7 +26,7 @@
     { tab: 'tienda', target: '#view-tienda .shop-hero', title: 'Tienda',
       text: 'Gasta tus monedas en temas, mascotas y poderes.' },
     { tab: 'social', target: '#view-social .segmented', title: 'Social',
-      text: 'Tu perfil con nombre y foto, tus logros, el ranking y tu clan para retos en grupo.' },
+      text: 'Tu perfil, tus logros, el ranking, tu clan y Familia: los padres pueden ver el progreso de sus hijos.' },
     { tab: 'decidia', target: '#view-decidia .decidia-hero', title: 'DECIDIA 🧠',
       text: 'Convierte tus decisiones en escenarios: escribe qué estás pensando y compara opciones. No da XP: es solo para ti.' },
     { tab: 'ajustes', target: '#remindersPanel', title: 'Recordatorios',
@@ -78,13 +78,18 @@
     card.style.top = Math.min(vh - h - 12, Math.max(12, y)) + 'px';
   }
 
-  function show(i){
+  // En modo menor (Familia) no existe Finanzas: esos pasos se saltan.
+  function hiddenStep(step){ return step.tab === 'finanzas' && LQ.Family && LQ.Family.isChildMode(LQ.state.settings); }
+
+  function show(i, dir){
+    while (STEPS[i] && hiddenStep(STEPS[i])) i += dir || 1;
+    if (!STEPS[i]) return finish();
     index = i;
     const step = STEPS[i];
     goTab(step.tab);
     const last = i === STEPS.length - 1;
     root.querySelector('.tour-card').innerHTML = `
-      <div class="tour-dots" aria-hidden="true">${STEPS.map((_, k) => `<span class="${k === i ? 'on' : ''}"></span>`).join('')}</div>
+      <div class="tour-dots" aria-hidden="true">${STEPS.map((st, k) => hiddenStep(st) ? '' : `<span class="${k === i ? 'on' : ''}"></span>`).join('')}</div>
       <h3>${step.title}</h3>
       <p>${step.text}</p>
       <div class="tour-actions">
@@ -95,7 +100,7 @@
     const card = root.querySelector('.tour-card');
     card.querySelector('[data-next]').onclick = () => (last ? finish() : show(i + 1));
     const skip = card.querySelector('[data-skip]'); if (skip) skip.onclick = finish;
-    const prev = card.querySelector('[data-prev]'); if (prev) prev.onclick = () => show(i - 1);
+    const prev = card.querySelector('[data-prev]'); if (prev) prev.onclick = () => show(i - 1, -1);
 
     // Espera a que la pestaña se dibuje, lleva el elemento a la vista y lo resalta.
     requestAnimationFrame(() => {
@@ -122,7 +127,7 @@
     onKey = (e) => {
       if (e.key === 'Escape') finish();
       else if (e.key === 'ArrowRight' && index < STEPS.length - 1) show(index + 1);
-      else if (e.key === 'ArrowLeft' && index > 0) show(index - 1);
+      else if (e.key === 'ArrowLeft' && index > 0) show(index - 1, -1);
     };
     onResize = () => place();
     document.addEventListener('keydown', onKey);

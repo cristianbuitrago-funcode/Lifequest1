@@ -25,8 +25,11 @@ El plan gratuito de Firebase (Spark) sobra para uso personal.
 4. Pestaña **Reglas**: borra lo que haya, pega el contenido de
    [`firestore.rules`](../firestore.rules) de este repositorio y pulsa **Publicar**.
    Estas reglas hacen que cada cuenta solo pueda leer y escribir sus propios datos,
-   y controlan el perfil público, el ranking y los clanes (nadie puede editar el
-   perfil de otro ni meter o sacar gente de un clan ajeno).
+   y controlan el perfil público, el ranking, los clanes y **Familia** (nadie puede
+   editar el perfil de otro, meter o sacar gente de un clan ajeno, ni ver el
+   progreso de un menor sin su código de vinculación).
+   **Cada vez que se actualicen las reglas del repositorio hay que volver a
+   pegarlas y publicarlas** (por ejemplo, la versión 1.8.0 añadió las de Familia).
 5. Pestaña **Índices → Compuestos → Crear índice**, y crea estos dos (los usan
    el ranking semanal y la lista de clanes abiertos):
    - Colección `publicProfiles`: `weekKey` **Ascendente**, `weeklyXp` **Descendente**.

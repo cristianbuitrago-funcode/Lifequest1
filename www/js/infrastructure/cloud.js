@@ -86,6 +86,7 @@
       if (!user){
         this.user = null;
         this.social = null;
+        this.family = null;
         LQ.sync.unregister();
         this._notify();
         return;
@@ -99,6 +100,7 @@
       await LQ.store.setMeta({ syncEmail: user.email || null });
       this.user = { uid: user.uid, email: user.email, name: user.displayName, photo: user.photoURL };
       this.social = LQ.cloudProviders.createSocialProvider(globalThis.firebase, this.db, user.uid);
+      this.family = LQ.cloudProviders.createFamilyProvider(globalThis.firebase, this.db, user.uid);
       LQ.sync.register(LQ.cloudProviders.createFirestoreProvider(globalThis.firebase, this.db, user.uid));
       this._notify();
       try{ await LQ.sync.syncNow(); }catch(e){ console.warn('LifeQuest: primera sincronización fallida', e); }
@@ -141,6 +143,8 @@
       const clanId = LQ.state.profile.social && LQ.state.profile.social.clanId;
       if (clanId) await social.leaveClan(clanId).catch(e => console.warn('leaveClan', e));
       await social.unpublish().catch(() => {});
+      // Familia: enlaces con padres o hijos y el resumen de progreso.
+      await LQ.cloudProviders.createFamilyProvider(firebase, this.db, user.uid).deleteAll().catch(e => console.warn('familia', e));
       await provider.deleteAll();
       try{
         await user.delete();
@@ -161,6 +165,7 @@
       await LQ.store.saveProfile();
       this.user = null;
       this.social = null;
+      this.family = null;
       this._notify();
     }
   };
