@@ -71,40 +71,22 @@
   };
 
   // -------------------------------------------------------------------------
-  // Notificaciones locales (@capacitor/local-notifications)
+  // Recordatorios: permisos con @capacitor/local-notifications; programación
+  // con el plugin propio LqAlarms (android/.../AlarmsPlugin.java)
   // -------------------------------------------------------------------------
-  // Canal nuevo con importancia alta: suena y aparece arriba aunque la app esté
-  // cerrada. (Un canal existente no se puede cambiar; por eso tiene otro id.)
-  const CHANNEL_ID = 'recordatorios-alertas';
-  let channelReady = null;
-
-  function ensureChannel(){
-    if (!channelReady){
-      channelReady = plugin('LocalNotifications').createChannel({
-        id: CHANNEL_ID, name: 'Recordatorios', description: 'Misiones, hábitos y pagos',
-        importance: 5, visibility: 1, vibration: true, lights: true, lightColor: '#D4AF37'
-      }).catch(e => { channelReady = null; console.warn('createChannel', e); });
-    }
-    return channelReady;
-  }
-
-  function toNative(n, exact){
-    return {
-      id: n.id,
-      title: n.title,
-      body: n.body,
-      largeBody: n.body,
-      channelId: CHANNEL_ID,
-      smallIcon: 'ic_stat_lifequest',
-      iconColor: '#D4AF37',
-      autoCancel: true,
-      // Con el permiso de "Alarmas y recordatorios" la alarma es exacta y suena
-      // aunque la app esté cerrada y el teléfono en reposo. Sin él, Android la
-      // trata como inexacta (puede retrasarla); nunca se abre el permiso solo.
-      schedule: { at: n.at, allowWhileIdle: true },
-      isExactNotification: exact,
-      extra: Object.assign({ kind: n.kind, date: n.date }, n.billId ? { billId: n.billId } : {})
-    };
+  // Los recordatorios de versiones anteriores los programaba el plugin
+  // LocalNotifications: se cancelan una vez para que no suenen dos veces.
+  let legacyCleared = false;
+  async function clearLegacy(){
+    if (legacyCleared) return;
+    legacyCleared = true;
+    try{
+      const LN = plugin('LocalNotifications');
+      const [lo, hi] = LQ.Reminders.ID_RANGE;
+      const { notifications } = await LN.getPending();
+      const ours = (notifications || []).filter(n => (n.id >= lo && n.id <= hi) || n.id === 999).map(n => ({ id: n.id }));
+      if (ours.length) await LN.cancel({ notifications: ours });
+    }catch(e){ console.warn('clearLegacy', e); }
   }
 
   native.notifications = {
@@ -137,40 +119,56 @@
       }catch(e){ console.warn('changeExactNotificationSetting', e); return false; }
     },
 
-    /** Sustituye todos los recordatorios programados por los de `list`. */
+    /**
+     * Sustituye todos los recordatorios programados por los de `list`.
+     * Los programa el plugin propio LqAlarms (alarmas tipo despertador, ver
+     * android/.../ReminderScheduler.java), que Android y las capas de los
+     * fabricantes entregan a su hora aunque la app esté cerrada.
+     */
     async replaceAll(list){
       if (!isNative) return;
-      const LN = plugin('LocalNotifications');
-      const [lo, hi] = LQ.Reminders.ID_RANGE;
-      const { notifications } = await LN.getPending();
-      const ours = (notifications || []).filter(n => n.id >= lo && n.id <= hi).map(n => ({ id: n.id }));
-      if (ours.length) await LN.cancel({ notifications: ours });
-      if (!list.length) return;
-      await ensureChannel();
-      const exact = await native.notifications.exactAllowed();
-      await LN.schedule({ notifications: list.map(n => toNative(n, exact)) });
+      await clearLegacy();
+      await plugin('LqAlarms').replaceAll({ items: list.map(n => ({
+        id: n.id, at: +n.at, title: n.title, body: n.body, kind: n.kind || '', billId: n.billId || ''
+      })) });
     },
 
     /** Programa una notificación de prueba dentro de `seconds` segundos. */
     async test(seconds){
       if (!isNative) return false;
-      await ensureChannel();
-      const exact = await native.notifications.exactAllowed();
-      await plugin('LocalNotifications').schedule({ notifications: [toNative({
-        id: 999, kind: 'test', date: '',
-        at: new Date(Date.now() + (seconds || 60) * 1000),
+      await plugin('LqAlarms').test({ seconds: seconds || 60,
         title: '🔔 Prueba de LifeCoinQuest',
-        body: 'Si ves y oyes esto con la app cerrada, tus recordatorios funcionan.'
-      }, exact)] });
-      return exact;
+        body: 'Si ves y oyes esto con la app cerrada, tus recordatorios funcionan.' });
+      return native.notifications.exactAllowed();
     },
 
-    /** Llama a fn(extra) cuando el usuario toca un recordatorio. */
+    /** Muestra una notificación ahora mismo (comprueba permisos y canal, sin alarma). */
+    notifyNow(){
+      if (!isNative) return Promise.resolve();
+      return plugin('LqAlarms').notifyNow({ id: 998, title: '🔔 LifeCoinQuest', body: 'Así se verán y sonarán tus recordatorios.' });
+    },
+
+    /** Diagnóstico: permisos, canal, alarmas exactas y cuántos avisos hay programados. */
+    async status(){
+      if (!isNative) return null;
+      try{ return await plugin('LqAlarms').status(); }catch(e){ console.warn('LqAlarms.status', e); return null; }
+    },
+
+    /** Abre los ajustes del canal "Recordatorios" (sonido, ventana emergente…). */
+    openChannelSettings(){ return isNative ? plugin('LqAlarms').openChannelSettings().catch(() => {}) : Promise.resolve(); },
+
+    /** Llama a fn({kind, billId}) cuando el usuario abre la app tocando un recordatorio. */
     onOpen(fn){
       if (!isNative) return;
+      // Avisos antiguos del plugin (instalaciones anteriores a 1.7.1).
       plugin('LocalNotifications').addListener('localNotificationActionPerformed', (e) => {
         fn((e && e.notification && e.notification.extra) || {});
       });
+      const check = () => plugin('LqAlarms').consumeOpen()
+        .then(r => { if (r && r.kind) fn({ kind: r.kind, billId: r.billId }); })
+        .catch(() => {});
+      check();
+      plugin('App').addListener('resume', check);
     }
   };
 

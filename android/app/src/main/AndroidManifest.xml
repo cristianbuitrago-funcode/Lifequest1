@@ -28,6 +28,19 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- Recordatorios propios (ReminderScheduler): alarma → notificación. -->
+        <receiver android:name=".ReminderReceiver" android:exported="false" />
+        <!-- Reprograma los recordatorios al reiniciar, actualizar la app o cambiar la hora. -->
+        <receiver android:name=".ReminderBootReceiver" android:exported="false" android:directBootAware="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Vuelve a programar los recordatorios también después de actualizar la app
              (el receptor del plugin solo lo hacía al reiniciar el teléfono). -->
         <receiver
