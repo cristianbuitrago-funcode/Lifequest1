@@ -6,8 +6,14 @@
   <meta name="color-scheme" content="light dark">
   <title>LifeCoinQuest</title>
   <link rel="icon" type="image/png" href="img/logo-192.png">
-  <link rel="apple-touch-icon" href="img/logo-512.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#030915">
+  <!-- iPhone: al agregarla a la pantalla de inicio se abre como app, a pantalla completa -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="LifeCoinQuest">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <script>
     try {
       const theme = localStorage.getItem('lifequest:theme');
@@ -46,6 +52,7 @@
   <script src="js/domain/family.js"></script>
   <script src="js/domain/modules.js"></script>
   <script src="js/platform/native.js"></script>
+  <script src="js/platform/pwa.js"></script>
   <script src="js/infrastructure/cloud.js"></script>
 
   <script src="js/presentation/ui/common.js"></script>

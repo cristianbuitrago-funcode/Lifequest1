@@ -72,6 +72,9 @@
         this.db.useEmulator(cfg.emulatorHost || '127.0.0.1', 8085);
       }
 
+      // Vuelta de un inicio de sesión por redirección (versión web instalada).
+      if (!LQ.native.isNative) this.auth.getRedirectResult().catch(e => console.warn('LifeCoinQuest: login por redirección', e));
+
       let first = true;
       await new Promise(resolve => {
         this.auth.onAuthStateChanged(async (user) => {
@@ -118,7 +121,15 @@
       if (location.protocol === 'file:'){
         throw new Error('Para iniciar sesión en la web abre LifeCoinQuest desde un servidor (npm start) o usa la app Android.');
       }
-      await this.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+      try{
+        await this.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+      }catch(e){
+        // App instalada en la pantalla de inicio (sobre todo en iPhone): si la
+        // ventana emergente no se puede abrir, se usa la redirección de Google.
+        const code = (e && e.code) || '';
+        if (!/popup-blocked|operation-not-supported|web-storage-unsupported/.test(code)) throw e;
+        await this.auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+      }
     },
 
     async signOut(){

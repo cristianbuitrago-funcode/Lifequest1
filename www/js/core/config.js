@@ -5,7 +5,7 @@
 (function (LQ) {
   "use strict";
 
-  const APP_VERSION = '1.9.0';
+  const APP_VERSION = '1.10.0';
   const APP_OWNER = 'Cristian Camilo Buitrago Espinosa';
   // Contacto público (el mismo de la política de privacidad y los términos).
   const APP_CONTACT = 'buitragocristianespinosa@gmail.com';

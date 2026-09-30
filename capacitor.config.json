@@ -22,5 +22,9 @@
         "google.com"
       ]
     }
+  },
+  "ios": {
+    "backgroundColor": "#030915",
+    "contentInset": "never"
   }
 }

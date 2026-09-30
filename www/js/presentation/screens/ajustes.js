@@ -52,7 +52,9 @@
         ${billReminderRow()}
         <div class="reminder-tools" id="reminderTools"></div>
         ` : `
-        <div class="sub">Los recordatorios con notificaciones están disponibles en la app de Android.</div>
+        <div class="sub">${LQ.pwa && LQ.pwa.isIOS
+          ? 'En iPhone, la versión web no puede programar avisos. Los recordatorios llegarán con la app de iPhone de la App Store.'
+          : 'Los recordatorios con notificaciones están disponibles en la app de Android (y en la de iPhone cuando llegue a la App Store).'}</div>
         `}
       </div>
       <button class="btn" id="saveSettingsBtn">Guardar ajustes</button>
@@ -258,7 +260,7 @@
     const turningOn = box.checked && !r.enabled;
     if (turningOn && !(await LQ.native.notifications.hasPermission(true))){
       box.checked = false;
-      ui.showToast('Permite las notificaciones de LifeCoinQuest en los ajustes de Android');
+      ui.showToast('Permite las notificaciones de LifeCoinQuest en los ajustes del teléfono');
       return;
     }
     r.enabled = box.checked;
@@ -293,7 +295,7 @@
       }
       return true;
     }
-    ui.showToast('Permite las notificaciones de LifeCoinQuest en los ajustes de Android');
+    ui.showToast('Permite las notificaciones de LifeCoinQuest en los ajustes del teléfono');
     return false;
   }
 
@@ -394,7 +396,16 @@
         ${check(st.pending > 0, st.pending > 0 ? st.pending + ' avisos programados · el próximo: ' + escapeHtml(fmtNext(st.next)) : 'No hay avisos programados (activa alguno arriba)')}
       </ul>
       ${!st.notificationsEnabled || st.channelImportance < 4 ? '<button class="btn small" id="channelBtn">Arreglar sonido y ventana</button>' : ''}` : '';
-    box.innerHTML = `
+    const ios = LQ.native.isIOS;
+    // En iPhone el sistema entrega los avisos a su hora: no hay alarmas exactas ni batería que ajustar.
+    box.innerHTML = ios ? `
+      ${diag.replace('Canal "Recordatorios" con sonido y ventana emergente', 'Avisos con sonido').replace('Arreglar sonido y ventana', 'Abrir ajustes del iPhone')}
+      <div class="backup-actions" style="margin-top:10px">
+        <button class="btn ghost small" id="nowNotifBtn">🔔 Probar ahora</button>
+        <button class="btn ghost small" id="testNotifBtn">⏱️ Probar en 1 minuto</button>
+      </div>
+      <div class="hint">En iPhone se programan los ${60} avisos más próximos; al abrir la app se programan los siguientes.
+        <button class="link-btn" id="appSettingsBtn" type="button">Ajustes de notificaciones</button></div>` : `
       <div class="reminder-row">
         <span class="toggle-text">Alarmas puntuales
           <small>${exact ? '✓ Activadas: suenan a su hora aunque la app esté cerrada.' : 'Desactivadas: Android puede retrasar o silenciar los avisos con la app cerrada.'}</small>

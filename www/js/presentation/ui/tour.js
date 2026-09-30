@@ -154,6 +154,7 @@
       LQ.state.settings.tutorialDone = true;
       await LQ.store.saveSettings();
     }
+    if (LQ.pwa) setTimeout(LQ.pwa.maybeShowHint, 1500);
   }
 
   /** Abre el tutorial si el usuario aún no lo ha visto. */
