@@ -211,6 +211,8 @@
     rolloverTimer = setInterval(checkDay, 60000);
     scheduleAchievements();
     setTimeout(() => { if (LQ.ui.tour) LQ.ui.tour.maybeStart(); }, 500);
+    // Versión web (iPhone): cómo instalarla, sin tapar el tutorial de la primera vez.
+    setTimeout(() => { if (LQ.pwa && !(LQ.ui.tour && LQ.ui.tour.active)) LQ.pwa.maybeShowHint(); }, 4000);
     return { stop };
   }
 

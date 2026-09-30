@@ -865,6 +865,20 @@ body.has-bg{ background-attachment:fixed;background-repeat:no-repeat; }
 .module-txt{ display:grid;font-size:13px; }
 .module-txt small{ font-size:11.5px;color:var(--muted);font-weight:500; }
 .tour-card .module-pick{ max-height:44vh;overflow:auto; }
+.install-hint{
+  position:fixed;left:12px;right:12px;bottom:calc(86px + var(--sat-bottom));z-index:85;
+  display:flex;align-items:center;gap:10px;padding:12px 40px 12px 12px;border-radius:16px;
+  background:var(--panel);border:1px solid var(--accent);box-shadow:0 18px 40px -18px rgba(0,0,0,.7);
+  font-size:13px;line-height:1.35;transform:translateY(20px);opacity:0;transition:transform .25s ease,opacity .25s ease;
+}
+.install-hint.show{ transform:none;opacity:1; }
+.install-hint b{ display:inline; }
+.install-hint > span > b:first-child{ display:block;margin-bottom:2px; }
+.install-hint > span:not(.install-icon){ flex:1; }
+.install-icon{ font-size:24px; }
+.ios-share{ display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;border:1px solid var(--accent);color:var(--accent);font-size:12px; }
+.install-close{ position:absolute;top:6px;right:8px;border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1; }
+@media (min-width:761px){ .install-hint{ left:auto;right:130px;bottom:24px;max-width:380px; } }
 .link-btn{ display:inline;padding:0;border:none;background:none;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline; }
 
 /* Responsive */

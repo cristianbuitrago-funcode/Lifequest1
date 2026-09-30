@@ -14,6 +14,13 @@ Es una **app Android** (empaquetada con Capacitor) construida sobre una web
 estática en HTML + CSS + JavaScript puro, sin build. Los datos se guardan en el
 dispositivo (IndexedDB) y se conservan entre sesiones.
 
+## iPhone
+
+- **Versión web instalable** (gratis): se abre en Safari y se agrega a la
+  pantalla de inicio; funciona sin internet. Se publica sola en GitHub Pages.
+- **App nativa** en `ios/` lista para TestFlight/App Store (requiere cuenta de
+  Apple Developer). Guía completa: **[docs/iphone.md](docs/iphone.md)**.
+
 ## Qué incluye
 
 - **Misiones** diarias y únicas con XP, monedas y castigo por incumplimiento.
